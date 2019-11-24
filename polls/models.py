@@ -180,7 +180,6 @@ class Caderneta:
             AND data between %s and %s       
         """, [cod_cliente, data_ini, data_fim])
 
-        locale.setlocale(locale.LC_ALL, '')
         table = {
             'nome_cliente': nome_cliente,
             'saldo_anterior': locale.currency(saldo_anterior),
@@ -378,7 +377,7 @@ class Boleto:
                                              pagamento_data), 3 
                             ) 
                             AS vencimento, 
-                            Iif(pagamento_data IS NULL, valor_documento, pagamento_valor) 
+                            CAST(Iif(pagamento_data IS NULL, valor_documento, pagamento_valor) as numeric(10,2)) 
                             AS valor, 
                             d.[codigo_cfd], 
                             f.nome_fantasia, 
@@ -431,7 +430,7 @@ class Boleto:
                       data_vencimento 
     """
 
-    table_header = ['Baixado',
+    table_header = ['Bx',
                    'Vencimento',
                    'Valor',
                    'Código',

@@ -1,7 +1,10 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
+import locale
 
 from . import views
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 app_name = 'polls'
 urlpatterns = [
