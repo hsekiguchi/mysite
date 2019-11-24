@@ -1,0 +1,11 @@
+{% extends "./list.html" %}
+{% block post_script %}
+<script>
+    document.getElementById('maintable').addEventListener('click', function(event) {
+	    const row = event.target.parentNode;
+	    var td = row.getElementsByTagName('TD');
+	    var reference="{% url return_view %}?codigo_cfd=" + td[0].innerHTML;
+        window.location.href=reference;
+    });
+</script>
+{% endblock post_script %}
