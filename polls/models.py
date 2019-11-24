@@ -372,9 +372,7 @@ class Fornecedor:
 
 
 class Boleto:
-    def load(self, param):
-        cursor = connections['myapp'].cursor()
-        cursor.execute("""
+    sql_statement = """
             SELECT TOP 1000 [baixado], 
                             CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, 
                                              pagamento_data), 3 
@@ -425,33 +423,45 @@ class Boleto:
                    AND f.grupo = ge1.id 
                    AND ge1.grupo = ge2.grupo 
                    AND ge2.id = 0 
-                   AND d.codigo_cfd = %s 
                    AND baixado = 0 
+    """
+
+    sql_orderby = """
             ORDER  BY pagamento_data, 
                       data_vencimento 
-        """, [param['codigo_cfd']])
-        table = {'header':['Baixado',
-                           'Vencimento',
-                           'Valor',
-                           'Código',
-                           'Identificação',
-                           'Conta',
-                           'Descricao',
-                           'Documento',
-                           'Razão&#xa0;Social&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                           'Emissão',
-                           'Vencimento',
-                           'Valor&#xa0;Nota',
-                           'Pagamento',
-                           'Valor Pago',
-                           'Desconto',
-                           'Acréscimo',
-                           'Grupo',
-                           'Descrição',
-                           'Subgrupo',
-                           'Descrição',
-                           'ID'
-                           ],
+    """
+
+    table_header = ['Baixado',
+                   'Vencimento',
+                   'Valor',
+                   'Código',
+                   'Identificação',
+                   'Conta',
+                   'Descricao',
+                   'Documento',
+                   'Razão&#xa0;Social&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+                   'Emissão',
+                   'Vencimento',
+                   'Valor&#xa0;Nota',
+                   'Pagamento',
+                   'Valor Pago',
+                   'Desconto',
+                   'Acréscimo',
+                   'Grupo',
+                   'Descrição',
+                   'Subgrupo',
+                   'Descrição',
+                   'ID',
+                   ]
+
+
+class BoletoFornecedor(Boleto):
+    def load(self, param):
+        cursor = connections['myapp'].cursor()
+        cursor.execute(self.sql_statement + """
+                   AND d.codigo_cfd = %s 
+        """ + self.sql_orderby, [param['codigo_cfd']])
+        table = {'header':self.table_header,
                  'list':cursor.fetchall()}
         return table
 
@@ -459,62 +469,16 @@ class Boleto:
         return ' .-. '
 
 
-class BoletoData:
-    def load(self, param):
+class BoletoData(Boleto):
+    def load(self, data_ini, data_fim):
         cursor = connections['myapp'].cursor()
-        cursor.execute("""
-            SELECT TOP 1000 [fin_duplicata_id],
-                       [baixado],
-                       CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, pagamento_data), 3) AS vencimento,
-                       d.[codigo_cfd],
-                       f.nome_fantasia,
-                       Iif(pagamento_data IS NULL, valor_documento, pagamento_valor) AS valor,
-                       d.[codigo_conta],
-                       Isnull(
-                                (SELECT TOP 1 nome_titular
-                                 FROM [DTMLOCAL].[dbo].[tb_fin_contas]
-                                 WHERE codigo_conta = d.codigo_conta), '') AS Descricao,
-                       [numero_documento],
-                       f.descricao,
-                       CONVERT(VARCHAR, [data_emissao], 3) AS Data_Emissao,
-                       CONVERT(VARCHAR, [data_vencimento], 3) AS Vencimento,
-                       Iif(pagamento_data IS NULL, valor_documento, [valor_documento] + [pagamento_desconto] - [pagamento_acrescimo]) AS Valor_Nota,
-                       CONVERT(VARCHAR, [pagamento_data], 3) AS Data_Pagamento,
-                       [pagamento_valor] AS Valor_Pagamento,
-                       [pagamento_desconto] AS Desconto,
-                       [pagamento_acrescimo] AS Acrescimo,
-                       ge1.grupo AS ID_Grupo,
-                       ge2.descricao AS Grupo,
-                       f.[grupo] AS ID_Sub_Grupo,
-                       sg.[descricao] AS Sub_Grupo
-            FROM [DTMLOCAL].[dbo].[tb_fin_duplicatas] d,
-                 [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f,
-                 [DTMLOCAL].[dbo].tb_fin_grupos_fdc sg,
-                 [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1,
-                 [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2
-            WHERE d.codigo_cfd = f.codigo_cfd
-              AND f.grupo = sg.grupo
-              AND f.grupo = ge1.id
-              AND ge1.grupo = ge2.grupo
-              AND ge2.id = 0
-              AND d.Codigo_CFD = f.Codigo_CFD
-              AND ((Data_Vencimento = '2019-10-01'
+        cursor.execute(self.sql_statement + """
+              AND ((Data_Vencimento BETWEEN %s AND %s
                     AND Pagamento_Data IS NULL)
-                   OR Pagamento_Data BETWEEN '2019-10-01 00:00' AND '2019-10-01 23:59')
-              ORDER  BY pagamento_data,
-                        data_vencimento
-        """, [param['codigo_fornecedor'], '%' + param['texto_pesquisa_str'] + '%'
-                       , '%' + param['texto_pesquisa_str'] + '%'])
-        table = {'header':['Código',
-                           'Nome',
-                           'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                           'CNPJ/CPF',
-                           'Grupo',
-                           'Descricao',
-                           'SubGrupo',
-                           'Descricao',
-                           'Ativo'
-                           ],
+                   OR Pagamento_Data BETWEEN %s AND %s)
+        """ + self.sql_orderby, [data_ini, data_fim,
+                                 data_ini+" 00:00:00", data_fim+" 23:59:59"])
+        table = {'header':self.table_header,
                  'list':cursor.fetchall()}
         return table
 

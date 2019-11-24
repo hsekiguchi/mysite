@@ -16,6 +16,7 @@ urlpatterns = [
     path('movimento/', views.movimento, name='movimento'),
     path('fornecedor/', views.fornecedor, name='fornecedor'),
     path('boleto/', views.boleto, name='boleto'),
+    path('boleto_data/', views.boleto_data, name='boleto_data'),
     path('sangria/a1ecc3b826d01251edddf29c3e4e1e97.woff',
          RedirectView.as_view(url='/static/polls/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
     path('produto/a1ecc3b826d01251edddf29c3e4e1e97.woff',
@@ -29,6 +30,8 @@ urlpatterns = [
     path('fornecedor/a1ecc3b826d01251edddf29c3e4e1e97.woff',
          RedirectView.as_view(url='/static/polls/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
     path('boleto/a1ecc3b826d01251edddf29c3e4e1e97.woff',
+         RedirectView.as_view(url='/static/polls/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
+    path('boleto_data/a1ecc3b826d01251edddf29c3e4e1e97.woff',
          RedirectView.as_view(url='/static/polls/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
 
 ]

@@ -7,9 +7,8 @@ from django.utils.http import urlencode
 from django.views import generic
 from django.utils.dateparse import parse_date
 
-from .models import Choice, Question, Sangria, Produto, Caderneta, Comanda, Movimento, Fornecedor
-from .models import Boleto
-
+from .models import Choice, Question, Sangria, Produto, Caderneta, Comanda, Movimento, Fornecedor, BoletoData
+from .models import BoletoFornecedor
 
 
 class IndexView(generic.ListView):
@@ -183,8 +182,35 @@ def boleto(request):
         except ValueError:
             codigo_cfd = 0
         param = {'codigo_cfd' : codigo_cfd}
-        b = Boleto()
+        b = BoletoFornecedor()
         boleto_list = b.load(param)
-        #context.update({'header': produto_list['header'], 'list': produto_list['data']})
         context.update(boleto_list)
     return render(request, 'polls/boleto.html', context)
+
+
+def boleto_data(request):
+    context = {'titulo': 'Boleto', 'find_date': True, 'view': 'polls:boleto_data' }
+
+    data_ini_str = request.POST.get("data_ini","")
+    if data_ini_str == "":
+        data_ini=datetime.now()
+    else:
+        data_ini=parse_date(data_ini_str)
+    data_ini_str = data_ini.strftime("%Y-%m-%d")
+    context.update({'data_ini': data_ini_str})
+
+    data_fim_str = request.POST.get("data_fim","")
+    if data_fim_str == "":
+        data_fim=datetime.now()
+    else:
+        data_fim=parse_date(data_fim_str)
+    data_fim_str = data_fim.strftime("%Y-%m-%d")
+    context.update({'data_fim': data_fim_str})
+    if request.method == "POST":
+        b = BoletoData()
+        context.update(b.load(data_ini_str, data_fim_str))
+    return render(request, 'polls/boleto.html', context)
+
+
+
+
