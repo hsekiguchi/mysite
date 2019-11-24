@@ -31,14 +31,14 @@
     <table class="table table-striped">
         <thead>
         {% autoescape off %}
-            <th><div class="form-check"><input class="form-check-input" type="checkbox" onclick="ToggleSelection()"></div>&#xa0;</th>
-            <th>Bx</th>
-            <th>Vencimento</th>
-            <th>Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;</th>
-            <th>Código</th>
+            <th><div class="form-check"><input class="form-check-input" type="checkbox" onclick="toggleSelection(this)"></div>&#xa0;</th>
+            <th>A/B</th>
+            <th>Vencim</th>
+            <th>Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;</th>
             <th>Identificação</th>
+            <th>Cd</th>
             <th>Conta</th>
-            <th>Descricao</th>
+            <th>Cd</th>
             <th>Documento</th>
             <th>Razão&#xa0;Social&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;</th>
             <th>Emissão</th>
@@ -49,19 +49,19 @@
             <th>Desconto</th>
             <th>Acréscimo</th>
             <th>Grupo</th>
-            <th>Descrição</th>
+            <th>Cd</th>
             <th>Subgrupo</th>
-            <th>Descrição</th>
+            <th>Cd</th>
             <th>ID</th>
         {% endautoescape %}
         </thead>
         {% for record in list %}
         <tr>
             <td><div class="form-check">
-                <input class="form-check-input sum-item" type="checkbox" value="{{ record.2 }}" onclick="UpdateTotal()"></div>&#xa0;</td>
+                <input class="form-check-input sum-item" type="checkbox" value="{{ record.2 }}" onclick="sumSelection()"></div>&#xa0;</td>
             <td>{{ record.0 }}</td>
             <td>{{ record.1 }}</td>
-            <td>{{ record.2|currency }}</td>
+            <td align="right">{{ record.2|currency }}</td>
             <td>{{ record.3 }}</td>
             <td>{{ record.4 }}</td>
             <td>{{ record.5 }}</td>
@@ -70,15 +70,15 @@
             <td>{{ record.8 }}</td>
             <td>{{ record.9 }}</td>
             <td>{{ record.10 }}</td>
-            <td>{{ record.11|currency }}</td>
+            <td align="right">{{ record.11|currency }}</td>
             <td>{{ record.12 }}</td>
-            <td>{{ record.13|currency }}</td>
-            <td>{{ record.14 }}</td>
-            <td>{{ record.15 }}</td>
+            <td align="right">{{ record.13|currency }}</td>
+            <td align="right">{{ record.14|currency }}</td>
+            <td align="right">{{ record.15|currency }}</td>
             <td>{{ record.16 }}</td>
-            <td>{{ record.17 }}</td>
+            <td align="right">{{ record.17 }}</td>
             <td>{{ record.18 }}</td>
-            <td>{{ record.19 }}</td>
+            <td align="right">{{ record.19 }}</td>
             <td>{{ record.20 }}</td>
         </tr>
         {% endfor %}
@@ -88,3 +88,27 @@
         <p>Sem registo.</p>
     {% endif %}
 {% endblock main_block %}
+
+{% block post_script %}
+<script>
+function sumSelection() {
+   checkboxes = document.getElementsByClassName('sum-item');
+   valortotal  = document.getElementById('valor-total');
+   total = 0;
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+      if (checkboxes[i].checked) {
+         total += parseFloat(checkboxes[i].value);
+      }
+   }
+   valortotal.innerHTML = total.toFixed(2);
+}
+
+function toggleSelection(source) {
+  checkboxes = document.getElementsByClassName('sum-item');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+  sumSelection();
+}
+</script>
+{% endblock post_script %}

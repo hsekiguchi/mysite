@@ -372,20 +372,20 @@ class Fornecedor:
 
 class Boleto:
     sql_statement = """
-            SELECT TOP 1000 [baixado], 
+            SELECT TOP 1000 Iif([baixado] = 0, 'AB', 'BX'), 
                             CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, 
                                              pagamento_data), 3 
                             ) 
                             AS vencimento, 
                             CAST(Iif(pagamento_data IS NULL, valor_documento, pagamento_valor) as numeric(10,2)) 
                             AS valor, 
-                            d.[codigo_cfd], 
                             f.nome_fantasia, 
-                            d.[codigo_conta], 
+                            d.[codigo_cfd], 
                             Isnull((SELECT TOP 1 nome_titular 
                                     FROM   [DTMLOCAL].[dbo].[tb_fin_contas] 
                                     WHERE  codigo_conta = d.codigo_conta), '') 
-                            AS Descricao, 
+                            AS Conta, 
+                            d.[codigo_conta], 
                             [numero_documento], 
                             LEFT(f.descricao, 25), 
                             CONVERT(VARCHAR, [data_emissao], 3) 
@@ -403,14 +403,14 @@ class Boleto:
                             AS Desconto, 
                             [pagamento_acrescimo] 
                             AS Acrescimo, 
-                            ge1.grupo 
-                            AS ID_Grupo, 
                             ge2.descricao 
                             AS Grupo, 
-                            f.[grupo] 
-                            AS ID_Sub_Grupo, 
+                            ge1.grupo 
+                            AS ID_Grupo, 
                             sg.[descricao] 
                             AS Sub_Grupo,
+                            f.[grupo] 
+                            AS ID_Sub_Grupo, 
                             [fin_duplicata_id] 
             FROM   [DTMLOCAL].[dbo].[tb_fin_duplicatas] d, 
                    [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f, 

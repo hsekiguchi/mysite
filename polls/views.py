@@ -161,7 +161,7 @@ def fornecedor(request):
 
 def boleto(request):
     return_view = 'polls:boleto'
-    context = {'titulo': 'Boleto', 'find_text': True, 'view':  return_view}
+    context = {'titulo': 'Boleto', 'find_text': True, 'show_tot': True, 'view':  return_view}
     if request.method == "POST":
         texto_pesquisa_str = request.POST.get("texto_pesquisa","")
         #obter o código do fornecedor da pesquisa anterior
@@ -189,7 +189,7 @@ def boleto(request):
 
 
 def boleto_data(request):
-    context = {'titulo': 'Boleto', 'find_date': True, 'view': 'polls:boleto_data' }
+    context = {'titulo': 'Boleto', 'find_date': True, 'show_tot': True, 'view': 'polls:boleto_data' }
 
     data_ini_str = request.POST.get("data_ini","")
     if data_ini_str == "":

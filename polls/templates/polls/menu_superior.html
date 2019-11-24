@@ -4,8 +4,14 @@
                 <ul class="nav-left">
                     <li><a id="sidebar-toggle" class="sidebar-toggle" href="javascript:void(0);"><i class="ti-menu"></i></a>
                     </li>
-                    <li><h4 class="c-grey-900 align-middle" style="height:65px;line-height:65px;" >{{titulo}}</h4></li>
+                    <li><h4 class="c-grey-900 align-middle" style="height=55px;line-height:56px;" >{{titulo}}</h4>
+                    </li>
                 </ul>
+                {% if show_tot %}
+                <ul style="float:left;padding:19px;">
+                    <h6>Tot: <span id="valor-total">0</span></h6>
+                </ul>
+                {% endif %}
                 <ul class="nav-right">
                     <li class="dropdown">
                         <a href="" class="dropdown-toggle no-after peers fxw-nw ai-c lh-1" data-toggle="dropdown">
