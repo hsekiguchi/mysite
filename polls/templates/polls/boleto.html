@@ -9,22 +9,29 @@
     </div>
     {% endif %}
     {% if find_date %}
-    <div class="form-group row">
-        <label for="data_ini" class="col-sm-4 col-form-label">Data Inicial</label>
-        <div class="col-sm-7">
-            <input type="text" class="form-control start-date" id="data_ini" name="data_ini" autocomplete="off" placeholder="Entre com data inicial" value="{{ data_ini }}">
-        </div>
+    <label for="data_ini" class="col-sm-4 col-form-label">Data Inicial</label>
+    <div class="col-sm-7">
+        <input type="text" class="form-control start-date" id="data_ini" name="data_ini" autocomplete="off" placeholder="Entre com data inicial" value="{{ data_ini }}">
     </div>
-    <div class="form-group row">
-        <label for="data_fim" class="col-sm-4 col-form-label">Data Final</label>
-        <div class="col-sm-7">
-            <input type="text" class="form-control end-date" id="data_fim" name="data_fim" autocomplete="off" placeholder="Entre com data final" value="{{ data_fim }}">
-        </div>
+    <label for="data_fim" class="col-sm-4 col-form-label">Data Final</label>
+    <div class="col-sm-7">
+        <input type="text" class="form-control end-date" id="data_fim" name="data_fim" autocomplete="off" placeholder="Entre com data final" value="{{ data_fim }}">
     </div>
     {% endif %}
+    <input type="hidden" id="codgio_cfd" value="{{ codigo_cfd }}">
 </div>
-<inut type="hidden" id="codgio_cfd" value="{{ codigo_cfd }}"
+
 {% endblock form_field %}
+
+{% block form_button %}
+<div>
+<button type="submit" name="submit" id="submit_button" value="submit" class="btn btn-primary">Consultar</button>
+{% if find_date %}
+<button type="submit" name="submit" id="previous_button" value="previous" class="btn btn-primary" style="margin-left:20px">Anterior</button>
+<button type="submit" name="submit" id="next_button" value="next" class="btn btn-primary" style="margin-left:20px">Próxima</button>
+{% endif %}
+</div>
+{% endblock form_button %}
 
 {% block main_block %}
     {% if list %}

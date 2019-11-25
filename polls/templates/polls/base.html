@@ -44,9 +44,11 @@
                         <form action="{% url view %}" method="post">
                             {% csrf_token %}
                             {% block form_field %}{% endblock form_field %}
+                            {% block form_button %}
                             <div>
-                            <button type="submit" id="submit_button" class="btn btn-primary">Consultar</button>
+                                <button type="submit" id="submit_button" value="submit" class="btn btn-primary">Consultar</button>
                             </div>
+                            {% endblock form_button %}
                         </form>
                     </div>
                     {% block header_block %}{% endblock header_block %}
