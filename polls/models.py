@@ -409,7 +409,7 @@ class Boleto:
                             AS ID_Grupo, 
                             sg.[descricao] 
                             AS Sub_Grupo,
-                            f.[grupo] 
+                            d.[codigo_grupo_fdc] 
                             AS ID_Sub_Grupo, 
                             [fin_duplicata_id] 
             FROM   [DTMLOCAL].[dbo].[tb_fin_duplicatas] d, 
@@ -418,8 +418,8 @@ class Boleto:
                    [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1, 
                    [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2 
             WHERE  d.codigo_cfd = f.codigo_cfd 
-                   AND f.grupo = sg.grupo 
-                   AND f.grupo = ge1.id 
+                   AND d.codigo_grupo_fdc = sg.grupo 
+                   AND d.codigo_grupo_fdc = ge1.id 
                    AND ge1.grupo = ge2.grupo 
                    AND ge2.id = 0 
                    AND baixado = 0 
