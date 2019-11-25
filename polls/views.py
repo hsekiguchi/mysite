@@ -51,17 +51,27 @@ def vote(request, question_id):
 
 def sangria(request):
     context = {'titulo': 'Sangria', 'find_date': True, 'view': 'polls:sangria' }
-    data_str = request.POST.get("data_ini","")
-    if data_str == "":
-        data=datetime.now()
-        data_str = data.strftime("%Y-%m-%d")
+
+    data_ini_str = request.POST.get("data_ini","")
+    if data_ini_str == "":
+        data_ini=datetime.now()
     else:
-        data = parse_date(data_str)
+        data_ini=parse_date(data_ini_str)
+
+    submit_type = request.POST.get("submit","submit")
+    if submit_type == "next":
+        data_ini +=  timedelta(days=1)
+    elif submit_type == "previous":
+        data_ini -=  timedelta(days=1)
+
+    data_ini_str = data_ini.strftime("%Y-%m-%d")
+    context.update({'data_ini': data_ini_str,})
+
+    if request.method == "POST":
         sg = Sangria()
-        sangria_list = sg.load(data.strftime("%Y-%m-%d"))
+        sangria_list = sg.load(data_ini_str)
         context.update(sangria_list)
 
-    context.update({'data_ini': data_str})
     return render(request, 'polls/list.html', context)
 
 
@@ -117,17 +127,27 @@ def comanda(request):
 
 def movimento(request):
     context = {'titulo': 'Movimento', 'find_date': True, 'view': 'polls:movimento' }
-    data_str = request.POST.get("data_ini","")
-    if data_str == "":
-        data=datetime.now()
-        data_str = data.strftime("%Y-%m-%d")
+
+    data_ini_str = request.POST.get("data_ini","")
+    if data_ini_str == "":
+        data_ini=datetime.now()
     else:
-        data = parse_date(data_str)
+        data_ini=parse_date(data_ini_str)
+
+    submit_type = request.POST.get("submit","submit")
+    if submit_type == "next":
+        data_ini +=  timedelta(days=1)
+    elif submit_type == "previous":
+        data_ini -=  timedelta(days=1)
+
+    data_ini_str = data_ini.strftime("%Y-%m-%d")
+    context.update({'data_ini': data_ini_str,})
+
+    if request.method == "POST":
         mv = Movimento()
-        list = mv.load(data.strftime("%Y-%m-%d"))
+        list = mv.load(data_ini_str)
         context.update(list)
 
-    context.update({'data_ini': data_str})
     return render(request, 'polls/list.html', context)
 
 

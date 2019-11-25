@@ -286,6 +286,7 @@ class Movimento:
                    [codigo_movimento]
                   ,count(*) as cupons
                   ,sum(total) as movimento
+                  ,sum(total)/count(*) as media
               FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
               where codigo_movimento in (""" + movimentos + """)
               and num_cartao !=''
@@ -306,15 +307,18 @@ class Movimento:
             total_movimento += linha[2]
             lista.append(list(linha))
             lista[lin][2] = locale.currency(linha[2])
+            lista[lin][3] = locale.currency(linha[3])
             movimento = list_movimento[lin]
             #if linha[0] == movimento[0]:
             lista[lin].extend(movimento[1:])
             lin = lin + 1
-        lista.append(['Total', cupons, locale.currency( total_movimento ),'','','',''])
+        lista.append(['Total', cupons, locale.currency(total_movimento),
+                     locale.currency(total_movimento/cupons),'','',''])
 
         table = {'header': ['Código',
-                            'Cupons',
+                            'Cupom',
                             'Movimento',
+                            'Média&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
                             'Caixa',
                             'Usuário',
                             'Data',

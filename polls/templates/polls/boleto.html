@@ -23,16 +23,6 @@
 
 {% endblock form_field %}
 
-{% block form_button %}
-<div>
-<button type="submit" name="submit" id="submit_button" value="submit" class="btn btn-primary">Consultar</button>
-{% if find_date %}
-<button type="submit" name="submit" id="previous_button" value="previous" class="btn btn-primary" style="margin-left:20px">Anterior</button>
-<button type="submit" name="submit" id="next_button" value="next" class="btn btn-primary" style="margin-left:20px">Próxima</button>
-{% endif %}
-</div>
-{% endblock form_button %}
-
 {% block main_block %}
     {% if list %}
     <table class="table table-striped">
@@ -99,13 +89,13 @@
 {% block post_script %}
 <script>
 function sumSelection() {
-   checkboxes = document.getElementsByClassName('sum-item');
-   valortotal  = document.getElementById('valor-total');
-   total = 0;
+  checkboxes = document.getElementsByClassName('sum-item');
+  valortotal  = document.getElementById('valor-total');
+  total = 0;
   for(var i=0, n=checkboxes.length;i<n;i++) {
-      if (checkboxes[i].checked) {
-         total += parseFloat(checkboxes[i].value);
-      }
+     if (checkboxes[i].checked) {
+       total += parseFloat(checkboxes[i].value);
+     }
    }
    valortotal.innerHTML = total.toFixed(2);
 }

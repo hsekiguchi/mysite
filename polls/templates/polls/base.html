@@ -47,6 +47,10 @@
                             {% block form_button %}
                             <div>
                                 <button type="submit" id="submit_button" value="submit" class="btn btn-primary">Consultar</button>
+                                {% if find_date %}
+                                <button type="submit" name="submit" id="previous_button" value="previous" class="btn btn-primary" style="margin-left:20px">Anterior</button>
+                                <button type="submit" name="submit" id="next_button" value="next" class="btn btn-primary" style="margin-left:20px">Próxima</button>
+                                {% endif %}
                             </div>
                             {% endblock form_button %}
                         </form>
