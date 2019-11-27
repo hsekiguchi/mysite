@@ -1,33 +1,30 @@
-import datetime
 import locale
-from django.db import models
-from django.utils import timezone
 from django.db import connections
 
 
-# Create your models here.
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published')
-
-    def was_published_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=1) <= self.pub_date <= now
-
-    def __str__(self):
-        return str(self.id) + ' - ' + self.question_text
-
-
-class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
-    def __str__(self):
-        return str(self.id) + ' - ' + self.choice_text
+# # Create your models here.
+# class Question(models.Model):
+#     question_text = models.CharField(max_length=200)
+#     pub_date = models.DateTimeField('date published')
+#
+#     def was_published_recently(self):
+#         now = timezone.now()
+#         return now - datetime.timedelta(days=1) <= self.pub_date <= now
+#
+#     def __str__(self):
+#         return str(self.id) + ' - ' + self.question_text
+#
+#
+# class Choice(models.Model):
+#     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+#     choice_text = models.CharField(max_length=200)
+#     votes = models.IntegerField(default=0)
+#     def __str__(self):
+#         return str(self.id) + ' - ' + self.choice_text
 
 class Sangria:
     def load(self, data):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute("""
             SELECT [codigo_movimento]
                   ,convert(varchar, [data], 3)
@@ -58,18 +55,18 @@ class Sangria:
 
 class Produto:
     def load(self, param):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute("""
-            SELECT TOP 1000 [codigo_produto]
+            SELECT TOP 100 [codigo_produto]
                 ,p.[descricao]
                 ,FORMAT(p.[preco_venda], 'C', 'pt-BR')
                 ,p.[preco_custo]
                 ,iif(p.preco_custo = 0, 0, cast((p.preco_venda/p.preco_custo - 1) as decimal(18,2)))
                 ,p.[validade_dias]
-                ,p.[codigo_grupo]
                 ,g.[descricao]
-                ,p.[codigo_subgrupo]
+                ,p.[codigo_grupo]
                 ,s.[descricao]
+                ,p.[codigo_subgrupo]
                 ,p.[ncm]
                 ,p.[ativo]
             FROM [DTMLOCAL].[dbo].[tb_cad_produto] p
@@ -87,9 +84,9 @@ class Produto:
                            'Margem',
                            'Validade',
                            'Grupo',
-                           'Descricao',
+                           'Cod',
                            'SubGrupo',
-                           'Descricao',
+                           'Cod',
                            'NCM',
                            'Ativo'
                            ],
@@ -101,7 +98,7 @@ class Produto:
 
 class Caderneta:
     def load(self, cod_cliente, data_ini, data_fim):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute("""
             SELECT nome
               FROM [DTMLOCAL].[dbo].[tb_cad_cliente]
@@ -170,7 +167,7 @@ class Caderneta:
 
         # obter os movimentos de debitos e creditos do período
         cursor.execute("""
-            SELECT TOP 1000
+            SELECT TOP 100
                 convert(varchar, [data], 3)
                 ,convert(varchar, [hora], 8)
                 ,FORMAT([valor], 'C', 'pt-BR')
@@ -200,7 +197,7 @@ class Caderneta:
 
 class Comanda:
     def load(self, num_comanda):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute("""
             SELECT TOP 1000 
                 convert(varchar, [data], 3)
@@ -251,7 +248,7 @@ class Comanda:
 
 class Movimento:
     def load(self, data):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute("""
             SELECT 
                    [codigo_movimento]
@@ -333,7 +330,7 @@ class Movimento:
 
 class Fornecedor:
     def load(self, param):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute("""
             SELECT TOP 1000 f.[Codigo_CFD]
                   ,f.[Nome_Fantasia]
@@ -376,7 +373,7 @@ class Fornecedor:
 
 class Boleto:
     sql_statement = """
-            SELECT TOP 1000 Iif([baixado] = 0, 'AB', 'BX'), 
+            SELECT TOP 100 Iif([baixado] = 0, 'AB', 'BX'), 
                             CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, 
                                              pagamento_data), 3 
                             ) 
@@ -460,7 +457,7 @@ class Boleto:
 
 class BoletoFornecedor(Boleto):
     def load(self, param):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute(self.sql_statement + """
                    AND d.codigo_cfd = %s 
         """ + self.sql_orderby, [param['codigo_cfd']])
@@ -474,7 +471,7 @@ class BoletoFornecedor(Boleto):
 
 class BoletoData(Boleto):
     def load(self, data_ini, data_fim):
-        cursor = connections['myapp'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute(self.sql_statement + """
               AND ((Data_Vencimento BETWEEN %s AND %s
                     AND Pagamento_Data IS NULL)
