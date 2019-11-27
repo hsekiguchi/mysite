@@ -12,7 +12,7 @@ from .models import BoletoFornecedor
 
 
 # class IndexView(generic.ListView):
-#     template_name = 'polls/index.html'
+#     template_name = 'fin/index.html'
 #     context_object_name = 'latest_question_list'
 #
 #     def get_queryset(self):
@@ -22,12 +22,12 @@ from .models import BoletoFornecedor
 #
 # class DetailView(generic.DetailView):
 #     model = Question
-#     template_name = 'polls/detail.html'
+#     template_name = 'fin/detail.html'
 #
 #
 # class ResultsView(generic.DetailView):
 #     model = Question
-#     template_name = 'polls/results.html'
+#     template_name = 'fin/results.html'
 #
 #
 # def vote(request, question_id):
@@ -36,7 +36,7 @@ from .models import BoletoFornecedor
 #         selected_choice = question.choice_set.get(pk=request.POST['choice'])
 #     except (KeyError, Choice.DoesNotExist):
 #         # Redisplay the question voting form.
-#         return render(request, 'polls/detail.html', {
+#         return render(request, 'fin/detail.html', {
 #             'question': question,
 #             'error_message': "You didn't select a choice.",
 #         })
@@ -46,11 +46,11 @@ from .models import BoletoFornecedor
 #         # Always return an HttpResponseRedirect after successfully dealing
 #         # with POST data. This prevents data from being posted twice if a
 #         # user hits the Back button.
-#         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+#         return HttpResponseRedirect(reverse('fin:results', args=(question.id,)))
 
 
 def sangria(request):
-    context = {'titulo': 'Sangria', 'find_date': True, 'view': 'polls:sangria' }
+    context = {'titulo': 'Sangria', 'find_date': True, 'view': 'fin:sangria' }
 
     data_ini_str = request.POST.get("data_ini","")
     if data_ini_str == "":
@@ -72,11 +72,11 @@ def sangria(request):
         sangria_list = sg.load(data_ini_str)
         context.update(sangria_list)
 
-    return render(request, 'polls/list.html', context)
+    return render(request, 'fin/list.html', context)
 
 
 def produto(request):
-    context = {'titulo': 'Produto', 'find_text': True, 'view': 'polls:produto' }
+    context = {'titulo': 'Produto', 'find_text': True, 'view': 'fin:produto' }
     texto_pesquisa_str = request.POST.get("texto_pesquisa","")
     context.update({'texto_pesquisa': texto_pesquisa_str})
     if texto_pesquisa_str != "":
@@ -89,10 +89,10 @@ def produto(request):
         produto_list = p.load(param)
         #context.update({'header': produto_list['header'], 'list': produto_list['data']})
         context.update(produto_list)
-    return render(request, 'polls/list.html', context)
+    return render(request, 'fin/list.html', context)
 
 def caderneta(request):
-    context = {'titulo': 'Caderneta', 'view': 'polls:caderneta' }
+    context = {'titulo': 'Caderneta', 'view': 'fin:caderneta' }
     codigo_cliente_str = request.POST.get("codigo_cliente","")
     context.update({'codigo_cliente': codigo_cliente_str})
 
@@ -107,10 +107,10 @@ def caderneta(request):
     if codigo_cliente_str != "":
         c = Caderneta()
         context.update(c.load(codigo_cliente_str, data_ini.strftime("%Y-%m-%d"), data_fim.strftime("%Y-%m-%d")))
-    return render(request, 'polls/caderneta.html', context)
+    return render(request, 'fin/caderneta.html', context)
 
 def comanda(request):
-    context = {'titulo': 'Comanda', 'find_text': True, 'view': 'polls:comanda'  }
+    context = {'titulo': 'Comanda', 'find_text': True, 'view': 'fin:comanda'  }
     texto_pesquisa_str = request.POST.get("texto_pesquisa","")
     context.update({'texto_pesquisa': texto_pesquisa_str})
     if texto_pesquisa_str != "":
@@ -123,10 +123,10 @@ def comanda(request):
         produto_list = p.load(codigo_comanda_str)
         context.update(produto_list)
 
-    return render(request, 'polls/list.html', context)
+    return render(request, 'fin/list.html', context)
 
 def movimento(request):
-    context = {'titulo': 'Movimento', 'find_date': True, 'view': 'polls:movimento' }
+    context = {'titulo': 'Movimento', 'find_date': True, 'view': 'fin:movimento' }
 
     data_ini_str = request.POST.get("data_ini","")
     if data_ini_str == "":
@@ -148,17 +148,17 @@ def movimento(request):
         list = mv.load(data_ini_str)
         context.update(list)
 
-    return render(request, 'polls/list.html', context)
+    return render(request, 'fin/list.html', context)
 
 
 def fornecedor(request):
-    context = {'titulo': 'Fornecedor', 'find_text': True, 'view': 'polls:fornecedor' }
+    context = {'titulo': 'Fornecedor', 'find_text': True, 'view': 'fin:fornecedor' }
     if request.method == "POST":
         texto_pesquisa_str = request.POST.get("texto_pesquisa","")
-        return_view = request.POST.get("return_view", "polls:fornecedor")
+        return_view = request.POST.get("return_view", "fin:fornecedor")
     else:
         texto_pesquisa_str = request.GET.get("texto_pesquisa","")
-        return_view = request.GET.get("return_view", "polls:fornecedor")
+        return_view = request.GET.get("return_view", "fin:fornecedor")
     context.update({'texto_pesquisa': texto_pesquisa_str, 'return_view': return_view})
     if texto_pesquisa_str != "":
         try:
@@ -170,17 +170,17 @@ def fornecedor(request):
         fornecedor_list = p.load(param)
         if len(fornecedor_list['list']) == 1:
             param['codigo_cfd'] = fornecedor_list['list'][0][0]
-            base_url = reverse('polls:boleto')
+            base_url = reverse('fin:boleto')
             query_string = urlencode(param)
             url = '{}?{}'.format(base_url, query_string)
             return redirect(url)
         #context.update({'header': produto_list['header'], 'list': produto_list['data']})
         context.update(fornecedor_list)
-    return render(request, 'polls/list_select.html', context)
+    return render(request, 'fin/list_select.html', context)
 
 
 def boleto(request):
-    return_view = 'polls:boleto'
+    return_view = 'fin:boleto'
     context = {'titulo': 'Boleto', 'find_text': True, 'show_tot': True, 'view':  return_view}
     if request.method == "POST":
         texto_pesquisa_str = request.POST.get("texto_pesquisa","")
@@ -188,7 +188,7 @@ def boleto(request):
         codigo_cfd_str = request.POST.get("codigo_cfd_str","")
         #se o texto_pesquisa for diferente do fornecedor anteriormente pequisado
         if texto_pesquisa_str != "" and texto_pesquisa_str != codigo_cfd_str:
-            base_url = reverse('polls:fornecedor')
+            base_url = reverse('fin:fornecedor')
             query_string = urlencode({'texto_pesquisa': texto_pesquisa_str, 'return_view': return_view})
             url = '{}?{}'.format(base_url, query_string)
             return redirect(url)
@@ -205,11 +205,11 @@ def boleto(request):
         b = BoletoFornecedor()
         boleto_list = b.load(param)
         context.update(boleto_list)
-    return render(request, 'polls/boleto.html', context)
+    return render(request, 'fin/boleto.html', context)
 
 
 def boleto_data(request):
-    context = {'titulo': 'Boleto', 'find_date': True, 'show_tot': True, 'view': 'polls:boleto_data' }
+    context = {'titulo': 'Boleto', 'find_date': True, 'show_tot': True, 'view': 'fin:boleto_data' }
 
     data_ini_str = request.POST.get("data_ini","")
     if data_ini_str == "":
@@ -239,7 +239,7 @@ def boleto_data(request):
     if request.method == "POST":
         b = BoletoData()
         context.update(b.load(data_ini_str, data_fim_str))
-    return render(request, 'polls/boleto.html', context)
+    return render(request, 'fin/boleto.html', context)
 
 
 
