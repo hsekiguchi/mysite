@@ -15,8 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic.base import RedirectView
+from fin import views
 
 urlpatterns = [
     path('fin/', include('fin.urls')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('', views.movimento, name='movimento'),
+    path('a1ecc3b826d01251edddf29c3e4e1e97.woff',
+         RedirectView.as_view(url='/static/fin/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
+
 ]

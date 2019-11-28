@@ -19,6 +19,8 @@ urlpatterns = [
     path('boleto_data/', views.boleto_data, name='boleto_data'),
     path('sangria/a1ecc3b826d01251edddf29c3e4e1e97.woff',
          RedirectView.as_view(url='/static/fin/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
+    path('a1ecc3b826d01251edddf29c3e4e1e97.woff',
+         RedirectView.as_view(url='/static/fin/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
     path('produto/a1ecc3b826d01251edddf29c3e4e1e97.woff',
          RedirectView.as_view(url='/static/fin/a1ecc3b826d01251edddf29c3e4e1e97.woff', permanent=True), name='woff'),
     path('movimento/a1ecc3b826d01251edddf29c3e4e1e97.woff',

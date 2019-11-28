@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.http import urlencode
-from django.views import generic
 from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
 
-from .models import Sangria, Produto, Caderneta, Comanda, Movimento, Fornecedor, BoletoData
-from .models import BoletoFornecedor
+from .models import Sangria, Produto, Caderneta, Comanda, Movimento, Fornecedor
+from .models import BoletoData, BoletoFornecedor
 
 
 # class IndexView(generic.ListView):
@@ -48,7 +47,7 @@ from .models import BoletoFornecedor
 #         # user hits the Back button.
 #         return HttpResponseRedirect(reverse('fin:results', args=(question.id,)))
 
-
+@login_required
 def sangria(request):
     context = {'titulo': 'Sangria', 'find_date': True, 'view': 'fin:sangria' }
 
@@ -75,6 +74,7 @@ def sangria(request):
     return render(request, 'fin/list.html', context)
 
 
+@login_required
 def produto(request):
     context = {'titulo': 'Produto', 'find_text': True, 'view': 'fin:produto' }
     texto_pesquisa_str = request.POST.get("texto_pesquisa","")
@@ -91,6 +91,8 @@ def produto(request):
         context.update(produto_list)
     return render(request, 'fin/list.html', context)
 
+
+@login_required
 def caderneta(request):
     context = {'titulo': 'Caderneta', 'view': 'fin:caderneta' }
     codigo_cliente_str = request.POST.get("codigo_cliente","")
@@ -125,6 +127,8 @@ def comanda(request):
 
     return render(request, 'fin/list.html', context)
 
+
+@login_required
 def movimento(request):
     context = {'titulo': 'Movimento', 'find_date': True, 'view': 'fin:movimento' }
 
@@ -151,6 +155,7 @@ def movimento(request):
     return render(request, 'fin/list.html', context)
 
 
+@login_required
 def fornecedor(request):
     context = {'titulo': 'Fornecedor', 'find_text': True, 'view': 'fin:fornecedor' }
     if request.method == "POST":
@@ -179,6 +184,7 @@ def fornecedor(request):
     return render(request, 'fin/list_select.html', context)
 
 
+@login_required
 def boleto(request):
     return_view = 'fin:boleto'
     context = {'titulo': 'Boleto', 'find_text': True, 'show_tot': True, 'view':  return_view}
@@ -208,6 +214,7 @@ def boleto(request):
     return render(request, 'fin/boleto.html', context)
 
 
+@login_required
 def boleto_data(request):
     context = {'titulo': 'Boleto', 'find_date': True, 'show_tot': True, 'view': 'fin:boleto_data' }
 
