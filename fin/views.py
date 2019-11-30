@@ -77,17 +77,33 @@ def sangria(request):
 @login_required
 def produto(request):
     context = {'titulo': 'Produto', 'find_text': True, 'view': 'fin:produto' }
+
+    if request.method == "POST":
+        inclui_inativo = True if request.POST.get("checkbox_inativo","") == "S" else False
+    elif 'inclui_inativo' in request.session:
+        inclui_inativo = request.session['inclui_inativo']
+    else:
+        inclui_inativo = False
+    request.session['inclui_inativo'] = inclui_inativo
+
+    checkbox_list = [
+        {'category':"Situação", 'options': [
+            {'name': 'checkbox_inativo', 'label': "incluir inativo", 'value': "S", 'checked': inclui_inativo, }]}
+    ]
+
     texto_pesquisa_str = request.POST.get("texto_pesquisa","")
-    context.update({'texto_pesquisa': texto_pesquisa_str})
+
+    context.update({'texto_pesquisa': texto_pesquisa_str, 'checkbox_list': checkbox_list})
     if texto_pesquisa_str != "":
         try:
             codigo_produto = int(texto_pesquisa_str)
         except ValueError:
             codigo_produto = 0
-        param = {'texto_pesquisa_str': texto_pesquisa_str, 'codigo_produto' : codigo_produto}
+        param = {'texto_pesquisa_str': texto_pesquisa_str, 'codigo_produto' : codigo_produto,
+                 'inclui_inativo': inclui_inativo, }
         p = Produto()
         produto_list = p.load(param)
-        #context.update({'header': produto_list['header'], 'list': produto_list['data']})
+
         context.update(produto_list)
     return render(request, 'fin/list.html', context)
 
@@ -188,6 +204,20 @@ def fornecedor(request):
 def boleto(request):
     return_view = 'fin:boleto'
     context = {'titulo': 'Boleto', 'find_text': True, 'show_tot': True, 'view':  return_view}
+
+    if request.method == "POST":
+        inclui_baixado = True if request.POST.get("checkbox_baixado","") == "1" else False
+    elif 'inclui_baixado' in request.session:
+        inclui_baixado = request.session['inclui_baixado']
+    else:
+        inclui_baixado = False
+    request.session['inclui_baixado'] = inclui_baixado
+
+    checkbox_list = [
+        {'category':"Situação", 'options': [
+            {'name': 'checkbox_baixado', 'label': "incluir baixado", 'value': "1", 'checked': inclui_baixado, }]}
+    ]
+
     if request.method == "POST":
         texto_pesquisa_str = request.POST.get("texto_pesquisa","")
         #obter o código do fornecedor da pesquisa anterior
@@ -201,13 +231,15 @@ def boleto(request):
     else:
         codigo_cfd_str = request.GET.get("codigo_cfd","")
         texto_pesquisa_str = codigo_cfd_str
-    context.update({'texto_pesquisa': texto_pesquisa_str, 'codigo_cfd': codigo_cfd_str,})
+    context.update({'texto_pesquisa': texto_pesquisa_str, 'codigo_cfd': codigo_cfd_str,
+                    'checkbox_list': checkbox_list,})
+
     if codigo_cfd_str != "":
         try:
             codigo_cfd = int(codigo_cfd_str)
         except ValueError:
             codigo_cfd = 0
-        param = {'codigo_cfd' : codigo_cfd}
+        param = {'codigo_cfd' : codigo_cfd, 'inclui_baixado': inclui_baixado, }
         b = BoletoFornecedor()
         boleto_list = b.load(param)
         context.update(boleto_list)

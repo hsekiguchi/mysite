@@ -54,9 +54,7 @@ class Sangria:
         return ' .-. '
 
 class Produto:
-    def load(self, param):
-        cursor = connections['default'].cursor()
-        cursor.execute("""
+    sql_statement ="""
             SELECT TOP 100 [codigo_produto]
                 ,p.[descricao]
                 ,FORMAT(p.[preco_venda], 'C', 'pt-BR')
@@ -74,9 +72,16 @@ class Produto:
               ON p.codigo_grupo = g.codigo_grupo
             JOIN [DTMLOCAL].[dbo].[tb_cad_subgrupo] s
               ON p.codigo_subgrupo = s.codigo_subgrupo
-            WHERE p.codigo_produto = %s
-            OR p.descricao like %s
-        """, [param['codigo_produto'], '%' + param['texto_pesquisa_str'] + '%'])
+            WHERE (p.codigo_produto = %s
+            OR p.descricao like %s)
+    """
+
+    def load(self, param):
+        cursor = connections['default'].cursor()
+        statement = self.sql_statement
+        if not param['inclui_inativo']:
+            statement += " AND p.[ativo] = 'S' "
+        cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa_str'] + '%'])
         table = {'header':['Cod Produto',
                            'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
                            'Preco&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
@@ -373,7 +378,7 @@ class Fornecedor:
 
 class Boleto:
     sql_statement = """
-            SELECT TOP 100 Iif([baixado] = 0, 'AB', 'BX'), 
+            SELECT TOP 50 Iif([baixado] = 0, 'AB', 'BX'), 
                             CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, 
                                              pagamento_data), 3 
                             ) 
@@ -423,12 +428,12 @@ class Boleto:
                    AND d.codigo_grupo_fdc = ge1.id 
                    AND ge1.grupo = ge2.grupo 
                    AND ge2.id = 0 
-                   AND baixado = 0 
     """
 
     sql_orderby = """
-            ORDER  BY pagamento_data, 
-                      data_vencimento 
+            ORDER  BY baixado,
+                      pagamento_data desc, 
+                      data_vencimento desc
     """
 
     table_header = ['Bx',
@@ -458,7 +463,11 @@ class Boleto:
 class BoletoFornecedor(Boleto):
     def load(self, param):
         cursor = connections['default'].cursor()
-        cursor.execute(self.sql_statement + """
+        statement = self.sql_statement
+        if not param['inclui_baixado']:
+            statement += " AND baixado = 0 "
+
+        cursor.execute(statement + """
                    AND d.codigo_cfd = %s 
         """ + self.sql_orderby, [param['codigo_cfd']])
         table = {'header':self.table_header,

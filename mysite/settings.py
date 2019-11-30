@@ -141,3 +141,4 @@ STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/fin/movimento/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

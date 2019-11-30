@@ -2,7 +2,7 @@
 {% block form_field %}
 <div class="form-group row">
     {% if find_text %}
-    <label for="texto_pesquisa" class="col-sm-2 col-form-label">{{titulo}}</label>
+    <label for="texto_pesquisa" class="col-sm-1 col-form-label">{{titulo}}</label>
     <div class="col-sm-5">
         <input type="text" class="form-control" name="texto_pesquisa" id="texto_pesquisa" value="{{ texto_pesquisa }}" onfocus="this.select();">
     </div>
@@ -14,4 +14,18 @@
     </div>
     {% endif %}
 </div>
+
+{% if checkbox_list %}
+{% for category in checkbox_list %}
+<div class="form-group row">
+    <div class="col-sm-1">{{ category.category }}</div>
+    <div class="col-sm-2"><div class="form-check">
+        {% for option in category.options %}
+        <label class="form-check-label">
+            <input class="form-check-input" type="checkbox" name="{{ option.name }}" value="{{option.value}}" {% if option.checked %}checked{% endif %}> {{option.label}}</label>
+        {% endfor %}
+    </div></div>
+</div>
+{% endfor %}
+{% endif %}
 {% endblock form_field %}
