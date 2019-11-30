@@ -4,7 +4,7 @@ import locale
 
 from . import views
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+locale.setlocale(locale.LC_ALL, '')
 
 app_name = 'fin'
 urlpatterns = [
