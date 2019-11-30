@@ -26,6 +26,7 @@ SECRET_KEY = '(i63$-2%#p&5j145cmi98!$bbri0gj_4r=e91*ulcmqxyxoj)s'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     '192.168.0.4',
     'panicenterbtu.ddns-intelbras.com.br'
 ]
