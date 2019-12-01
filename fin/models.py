@@ -1,53 +1,36 @@
 import locale
 from django.db import connections
 
-
-# # Create your models here.
-# class Question(models.Model):
-#     question_text = models.CharField(max_length=200)
-#     pub_date = models.DateTimeField('date published')
-#
-#     def was_published_recently(self):
-#         now = timezone.now()
-#         return now - datetime.timedelta(days=1) <= self.pub_date <= now
-#
-#     def __str__(self):
-#         return str(self.id) + ' - ' + self.question_text
-#
-#
-# class Choice(models.Model):
-#     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-#     choice_text = models.CharField(max_length=200)
-#     votes = models.IntegerField(default=0)
-#     def __str__(self):
-#         return str(self.id) + ' - ' + self.choice_text
-
 class Sangria:
+    sql_statement = """
+        SELECT [codigo_movimento]
+              ,convert(varchar, [data], 3)
+              ,convert(varchar, [hora], 8)
+              ,[descricao]
+              ,FORMAT([total], 'C', 'pt-BR')
+          FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
+          where codigo_movimento in (select distinct codigo_movimento 
+              from [DTMLOCAL].[dbo].[tb_fechamento_venda] 
+              where data = %s
+              and hora > '03:00')
+          and codigo_tipo_movimento=4
+          order by codigo_movimento, data, hora        
+    """
+    table_header = [
+        'Cod',
+        'Data',
+        'Hora',
+        'Descricao',
+        'Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;'
+    ]
+
     def load(self, data):
         cursor = connections['default'].cursor()
-        cursor.execute("""
-            SELECT [codigo_movimento]
-                  ,convert(varchar, [data], 3)
-                  ,convert(varchar, [hora], 8)
-                  ,[descricao]
-                  ,FORMAT([total], 'C', 'pt-BR')
-              FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
-              where codigo_movimento in (select distinct codigo_movimento 
-                  from [DTMLOCAL].[dbo].[tb_fechamento_venda] 
-                  where data = %s
-                  and hora > '03:00')
-              and codigo_tipo_movimento=4
-              order by codigo_movimento, data, hora        
-        """, [data])
+        cursor.execute(self.sql_statement, [data])
         #  adicionado '&#xa0;' para a coluna ficar com espaço suficente para
         #  evitar valores monetários ficarem com o R$ e valor em linhas distintas
-        table = {'header':['Cod',
-                           'Data',
-                           'Hora',
-                           'Descricao',
-                           'Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;'
-                           ],
-                 'list':cursor.fetchall()}
+        table = {'header': self.table_header,
+                 'list': cursor.fetchall()}
         return table
 
     def __str__(self):
@@ -55,51 +38,60 @@ class Sangria:
 
 class Produto:
     sql_statement ="""
-            SELECT TOP 100 [codigo_produto]
-                ,p.[descricao]
-                ,FORMAT(p.[preco_venda], 'C', 'pt-BR')
-                ,p.[preco_custo]
-                ,iif(p.preco_custo = 0, 0, cast((p.preco_venda/p.preco_custo - 1) as decimal(18,2)))
-                ,p.[validade_dias]
-                ,g.[descricao]
-                ,p.[codigo_grupo]
-                ,s.[descricao]
-                ,p.[codigo_subgrupo]
-                ,p.[ncm]
-                ,p.[ativo]
-            FROM [DTMLOCAL].[dbo].[tb_cad_produto] p
-            JOIN [DTMLOCAL].[dbo].[tb_cad_grupo] g
-              ON p.codigo_grupo = g.codigo_grupo
-            JOIN [DTMLOCAL].[dbo].[tb_cad_subgrupo] s
-              ON p.codigo_subgrupo = s.codigo_subgrupo
-            WHERE (p.codigo_produto = %s
-            OR p.descricao like %s)
+        SELECT TOP 100 [codigo_produto]
+            ,p.[descricao]
+            ,FORMAT(p.[preco_venda], 'C', 'pt-BR')
+            ,p.[preco_custo]
+            ,iif(p.preco_custo = 0, 0, cast((p.preco_venda/p.preco_custo - 1) as decimal(18,2)))
+            ,p.[validade_dias]
+            ,g.[descricao]
+            ,p.[codigo_grupo]
+            ,s.[descricao]
+            ,p.[codigo_subgrupo]
+            ,p.[ncm]
+            ,p.[ativo]
+        FROM [DTMLOCAL].[dbo].[tb_cad_produto] p
+        JOIN [DTMLOCAL].[dbo].[tb_cad_grupo] g
+          ON p.codigo_grupo = g.codigo_grupo
+        JOIN [DTMLOCAL].[dbo].[tb_cad_subgrupo] s
+          ON p.codigo_subgrupo = s.codigo_subgrupo
+        WHERE (p.codigo_produto = %s
+        OR p.descricao like %s)
     """
+    table_header = [
+        'Cod Produto',
+        'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Preco&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Custo',
+        'Margem',
+        'Validade',
+        'Grupo',
+        'Cod',
+        'SubGrupo',
+        'Cod',
+        'NCM',
+        'Ativo',
+    ]
 
     def load(self, param):
-        cursor = connections['default'].cursor()
-        statement = self.sql_statement
-        if not param['inclui_inativo']:
-            statement += " AND p.[ativo] = 'S' "
-        cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa_str'] + '%'])
-        table = {'header':['Cod Produto',
-                           'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                           'Preco&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                           'Custo',
-                           'Margem',
-                           'Validade',
-                           'Grupo',
-                           'Cod',
-                           'SubGrupo',
-                           'Cod',
-                           'NCM',
-                           'Ativo'
-                           ],
-                 'list':cursor.fetchall()}
+        checkbox_list = [
+            {'category': "Situação", 'options': [
+                {'name': 'checkbox_inativo', 'label': "incluir inativo", 'value': "S", 'checked': param['inclui_inativo'], }]}
+        ]
+        table = {'checkbox_list': checkbox_list,}
+        if param['texto_pesquisa_str'] != "":
+            cursor = connections['default'].cursor()
+            statement = self.sql_statement
+            if not param['inclui_inativo']:
+                statement += " AND p.[ativo] = 'S' "
+            cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa_str'] + '%'])
+            lista_produto = cursor.fetchall()
+            table.update({'header': self.table_header,
+                           'list': lista_produto,})
         return table
 
     def __str__(self):
-        return ' .-. '
+        return '(^o^)/ '
 
 class Caderneta:
     def load(self, cod_cliente, data_ini, data_fim):
@@ -201,24 +193,37 @@ class Caderneta:
         return ' .-. '
 
 class Comanda:
+    sql_statement = """
+        SELECT TOP 1000 
+            convert(varchar, [data], 3)
+            ,convert(varchar, [hora], 8)
+            ,m.[codigo_produto]
+            ,p.[descricao]
+            ,[qtde]
+            ,[valor_unitario]
+            ,[total]
+            ,[codigo_terminal]
+            ,[usuario]
+            FROM [DTMLOCAL].[dbo].[tb_movimento_venda] m,
+            [DTMLOCAL].[dbo].[tb_cad_produto] p
+            where m.codigo_produto = p.codigo_produto
+            and num_cartao=%s
+    """
+    table_header = [
+        'Data',
+        'Hora',
+        "Cod",
+        'Descricao',
+        'Qtd',
+        'Preco',
+        'Total',
+        'Terminal',
+        'Usuário',
+    ]
+
     def load(self, num_comanda):
         cursor = connections['default'].cursor()
-        cursor.execute("""
-            SELECT TOP 1000 
-                convert(varchar, [data], 3)
-                ,convert(varchar, [hora], 8)
-                ,m.[codigo_produto]
-                ,p.[descricao]
-                ,[qtde]
-                ,[valor_unitario]
-                ,[total]
-                ,[codigo_terminal]
-                ,[usuario]
-                FROM [DTMLOCAL].[dbo].[tb_movimento_venda] m,
-				[DTMLOCAL].[dbo].[tb_cad_produto] p
-                where m.codigo_produto = p.codigo_produto
-				and num_cartao=%s
-        """, [num_comanda])
+        cursor.execute(self.sql_statement, [num_comanda])
         lista_itens = cursor.fetchall()
         lista=[]
         i=0
@@ -231,19 +236,10 @@ class Comanda:
             lista[i][6]=locale.currency(item[6])
             i+=1
 
-        lista.append(['Total','',locale.currency(total_comanda),'','','','','',''])
+        if i > 0:
+            lista.append(['Total','',locale.currency(total_comanda),'','','','','',''])
 
-
-        table = {'header':['Data',
-                           'Hora',
-                           "Cod",
-                           'Descricao',
-                           'Qtd',
-                           'Preco',
-                           'Total',
-                           'Terminal',
-                           'Usuário',
-                           ],
+        table = {'header': self.table_header,
                  'list': lista}
         return table
 
@@ -252,20 +248,46 @@ class Comanda:
 
 
 class Movimento:
+    sql_statement_caixa = """
+        SELECT [codigo_movimento]
+              ,[codigo_caixa]
+              ,[codigo_usuario]
+              ,(convert(varchar, [data_abertura], 3)) as data
+              ,(convert(varchar, [hora_abertura], 8)) as inicio
+              ,(convert(varchar, [hora_fechamento], 8)) as fim
+          FROM [DTMLOCAL].[dbo].[tb_movimento_caixa]
+          where data_abertura=%s
+          order by codigo_movimento
+    """
+    sql_statement_fechamento = """
+        SELECT [codigo_movimento]
+              ,count(*) as cupons
+              ,sum(total) as movimento
+              ,sum(total)/count(*) as media
+          FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
+          where num_cartao !=''
+              and codigo_cliente not in (55, 97, 98, 99)
+              and codigo_movimento in (
+    """
+    sql_orderby_fechamento = """
+        )
+        group by codigo_movimento
+    """
+    table_header = [
+        'Código',
+        'Cupom',
+        'Movimento',
+        'Média&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Caixa',
+        'Usuário',
+        'Data',
+        "Início",
+        'Fim',
+    ]
+
     def load(self, data):
         cursor = connections['default'].cursor()
-        cursor.execute("""
-            SELECT 
-                   [codigo_movimento]
-                  ,[codigo_caixa]
-                  ,[codigo_usuario]
-                  ,(convert(varchar, [data_abertura], 3)) as data
-                  ,(convert(varchar, [hora_abertura], 8)) as inicio
-                  ,(convert(varchar, [hora_fechamento], 8)) as fim
-              FROM [DTMLOCAL].[dbo].[tb_movimento_caixa]
-              where data_abertura=%s
-              order by codigo_movimento
-        """, [data])
+        cursor.execute(self.sql_statement_caixa, [data])
 
         list_movimento = cursor.fetchall()
 
@@ -283,18 +305,7 @@ class Movimento:
             return {}
 
         #obter quantidade de cupos e total de movimentos
-        cursor.execute("""
-            SELECT 
-                   [codigo_movimento]
-                  ,count(*) as cupons
-                  ,sum(total) as movimento
-                  ,sum(total)/count(*) as media
-              FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
-              where codigo_movimento in (""" + movimentos + """)
-              and num_cartao !=''
-              and codigo_cliente not in (55, 97, 98, 99)
-              group by codigo_movimento
-        """)
+        cursor.execute(self.sql_statement_fechamento + movimentos + self.sql_orderby_fechamento)
 
         quantidade_list = cursor.fetchall()
 
@@ -317,59 +328,53 @@ class Movimento:
         lista.append(['Total', cupons, locale.currency(total_movimento),
                      locale.currency(total_movimento/cupons),'','','','',''])
 
-        table = {'header': ['Código',
-                            'Cupom',
-                            'Movimento',
-                            'Média&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                            'Caixa',
-                            'Usuário',
-                            'Data',
-                            "Início",
-                            'Fim',
-                            ],
+        table = {'header': self.table_header,
                  'list': lista}
         return table
 
     def __str__(self):
-        return ' .-. '
+        return '(◕‿◕)'
 
 class Fornecedor:
+    sql_statement = """
+        SELECT TOP 1000 f.[Codigo_CFD]
+              ,f.[Nome_Fantasia]
+              ,f.[Descricao]
+              ,f.[CGC_CPF]
+              ,ge1.grupo as ID_Grupo
+              ,ge2.descricao as Grupo
+              ,f.[Grupo] as ID_Sub_Grupo
+              ,sg.[DESCRICAO] as Sub_Grupo
+              ,f.[inativo]
+          FROM [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f,
+          [DTMLOCAL].[dbo].tb_fin_grupos_fdc sg,
+          [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1,
+          [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2
+          where f.Grupo = sg.GRUPO
+          and f.Grupo = ge1.id
+          and ge1.grupo = ge2.grupo
+          and ge2.id = 0
+          and (f.Codigo_CFD =%s
+            or (f.nome_fantasia like %s or f.Descricao like %s))
+          order by f.Descricao
+    """
+    table_header = [
+        'Código',
+        'Nome',
+        'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'CNPJ/CPF',
+        'Grupo',
+        'Descricao',
+        'SubGrupo',
+        'Descricao',
+        'Ativo'
+    ]
     def load(self, param):
         cursor = connections['default'].cursor()
-        cursor.execute("""
-            SELECT TOP 1000 f.[Codigo_CFD]
-                  ,f.[Nome_Fantasia]
-                  ,f.[Descricao]
-                  ,f.[CGC_CPF]
-                  ,ge1.grupo as ID_Grupo
-                  ,ge2.descricao as Grupo
-                  ,f.[Grupo] as ID_Sub_Grupo
-                  ,sg.[DESCRICAO] as Sub_Grupo
-                  ,f.[inativo]
-              FROM [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f,
-              [DTMLOCAL].[dbo].tb_fin_grupos_fdc sg,
-              [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1,
-              [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2
-              where f.Grupo = sg.GRUPO
-              and f.Grupo = ge1.id
-              and ge1.grupo = ge2.grupo
-              and ge2.id = 0
-              and (f.Codigo_CFD =%s
-                or (f.nome_fantasia like %s or f.Descricao like %s))
-              order by f.Descricao
-        """, [param['codigo_cfd'], '%' + param['texto_pesquisa'] + '%'
+        cursor.execute(self.sql_statement, [param['codigo_cfd'], '%' + param['texto_pesquisa'] + '%'
                        , '%' + param['texto_pesquisa'] + '%'])
-        table = {'header':['Código',
-                           'Nome',
-                           'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                           'CNPJ/CPF',
-                           'Grupo',
-                           'Descricao',
-                           'SubGrupo',
-                           'Descricao',
-                           'Ativo'
-                           ],
-                 'list':cursor.fetchall()}
+        table = {'header': self.table_header,
+                 'list': cursor.fetchall()}
         return table
 
     def __str__(self):
@@ -378,56 +383,56 @@ class Fornecedor:
 
 class Boleto:
     sql_statement = """
-            SELECT TOP 50 Iif([baixado] = 0, 'AB', 'BX'), 
-                            CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, 
-                                             pagamento_data), 3 
-                            ) 
-                            AS vencimento, 
-                            CAST(Iif(pagamento_data IS NULL, valor_documento, pagamento_valor) as numeric(10,2)) 
-                            AS valor, 
-                            f.nome_fantasia, 
-                            d.[codigo_cfd], 
-                            Isnull((SELECT TOP 1 nome_titular 
-                                    FROM   [DTMLOCAL].[dbo].[tb_fin_contas] 
-                                    WHERE  codigo_conta = d.codigo_conta), '') 
-                            AS Conta, 
-                            d.[codigo_conta], 
-                            [numero_documento], 
-                            LEFT(f.descricao, 25), 
-                            CONVERT(VARCHAR, [data_emissao], 3) 
-                            AS Data_Emissao, 
-                            CONVERT(VARCHAR, [data_vencimento], 3) 
-                            AS Vencimento, 
-                            Iif(pagamento_data IS NULL, valor_documento, 
-                            [valor_documento] + [pagamento_desconto] - [pagamento_acrescimo] 
-                            ) AS Valor_Nota, 
-                            CONVERT(VARCHAR, [pagamento_data], 3) 
-                            AS Data_Pagamento, 
-                            [pagamento_valor] 
-                            AS Valor_Pagamento, 
-                            [pagamento_desconto] 
-                            AS Desconto, 
-                            [pagamento_acrescimo] 
-                            AS Acrescimo, 
-                            ge2.descricao 
-                            AS Grupo, 
-                            ge1.grupo 
-                            AS ID_Grupo, 
-                            sg.[descricao] 
-                            AS Sub_Grupo,
-                            d.[codigo_grupo_fdc] 
-                            AS ID_Sub_Grupo, 
-                            [fin_duplicata_id] 
-            FROM   [DTMLOCAL].[dbo].[tb_fin_duplicatas] d, 
-                   [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f, 
-                   [DTMLOCAL].[dbo].tb_fin_grupos_fdc sg, 
-                   [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1, 
-                   [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2 
-            WHERE  d.codigo_cfd = f.codigo_cfd 
-                   AND d.codigo_grupo_fdc = sg.grupo 
-                   AND d.codigo_grupo_fdc = ge1.id 
-                   AND ge1.grupo = ge2.grupo 
-                   AND ge2.id = 0 
+        SELECT TOP 50 Iif([baixado] = 0, 'AB', 'BX'), 
+                        CONVERT(VARCHAR, Iif(pagamento_data IS NULL, data_vencimento, 
+                                         pagamento_data), 3 
+                        ) 
+                        AS vencimento, 
+                        CAST(Iif(pagamento_data IS NULL, valor_documento, pagamento_valor) as numeric(10,2)) 
+                        AS valor, 
+                        f.nome_fantasia, 
+                        d.[codigo_cfd], 
+                        Isnull((SELECT TOP 1 nome_titular 
+                                FROM   [DTMLOCAL].[dbo].[tb_fin_contas] 
+                                WHERE  codigo_conta = d.codigo_conta), '') 
+                        AS Conta, 
+                        d.[codigo_conta], 
+                        [numero_documento], 
+                        LEFT(f.descricao, 25), 
+                        CONVERT(VARCHAR, [data_emissao], 3) 
+                        AS Data_Emissao, 
+                        CONVERT(VARCHAR, [data_vencimento], 3) 
+                        AS Vencimento, 
+                        Iif(pagamento_data IS NULL, valor_documento, 
+                        [valor_documento] + [pagamento_desconto] - [pagamento_acrescimo] 
+                        ) AS Valor_Nota, 
+                        CONVERT(VARCHAR, [pagamento_data], 3) 
+                        AS Data_Pagamento, 
+                        [pagamento_valor] 
+                        AS Valor_Pagamento, 
+                        [pagamento_desconto] 
+                        AS Desconto, 
+                        [pagamento_acrescimo] 
+                        AS Acrescimo, 
+                        ge2.descricao 
+                        AS Grupo, 
+                        ge1.grupo 
+                        AS ID_Grupo, 
+                        sg.[descricao] 
+                        AS Sub_Grupo,
+                        d.[codigo_grupo_fdc] 
+                        AS ID_Sub_Grupo, 
+                        [fin_duplicata_id] 
+        FROM   [DTMLOCAL].[dbo].[tb_fin_duplicatas] d, 
+               [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f, 
+               [DTMLOCAL].[dbo].tb_fin_grupos_fdc sg, 
+               [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1, 
+               [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2 
+        WHERE  d.codigo_cfd = f.codigo_cfd 
+               AND d.codigo_grupo_fdc = sg.grupo 
+               AND d.codigo_grupo_fdc = ge1.id 
+               AND ge1.grupo = ge2.grupo 
+               AND ge2.id = 0 
     """
 
     sql_orderby = """
@@ -435,33 +440,37 @@ class Boleto:
                       pagamento_data desc, 
                       data_vencimento desc
     """
-
-    table_header = ['Bx',
-                   'Vencimento',
-                   'Valor',
-                   'Código',
-                   'Identificação',
-                   'Conta',
-                   'Descricao',
-                   'Documento',
-                   'Razão&#xa0;Social&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-                   'Emissão',
-                   'Vencimento',
-                   'Valor&#xa0;Nota',
-                   'Pagamento',
-                   'Valor Pago',
-                   'Desconto',
-                   'Acréscimo',
-                   'Grupo',
-                   'Descrição',
-                   'Subgrupo',
-                   'Descrição',
-                   'ID',
-                   ]
+    table_header = [
+        'Bx',
+        'Vencimento',
+        'Valor',
+        'Código',
+        'Identificação',
+        'Conta',
+        'Descricao',
+        'Documento',
+        'Razão&#xa0;Social&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Emissão',
+        'Vencimento',
+        'Valor&#xa0;Nota',
+        'Pagamento',
+        'Valor Pago',
+        'Desconto',
+        'Acréscimo',
+        'Grupo',
+        'Descrição',
+        'Subgrupo',
+        'Descrição',
+        'ID',
+    ]
 
 
 class BoletoFornecedor(Boleto):
     def load(self, param):
+        checkbox_list = [
+            {'category': "Situação", 'options': [
+                {'name': 'checkbox_baixado', 'label': "incluir baixado", 'value': "1", 'checked': param['inclui_baixado'], }]}
+        ]
         cursor = connections['default'].cursor()
         statement = self.sql_statement
         if not param['inclui_baixado']:
@@ -470,8 +479,9 @@ class BoletoFornecedor(Boleto):
         cursor.execute(statement + """
                    AND d.codigo_cfd = %s 
         """ + self.sql_orderby, [param['codigo_cfd']])
-        table = {'header':self.table_header,
-                 'list':cursor.fetchall()}
+        table = {'header': self.table_header,
+                 'list': cursor.fetchall(),
+                 'checkbox_list': checkbox_list,}
         return table
 
     def __str__(self):
@@ -479,9 +489,14 @@ class BoletoFornecedor(Boleto):
 
 
 class BoletoData(Boleto):
+    sql_orderby = """
+            ORDER  BY data_vencimento
+    """
+
     def load(self, data_ini, data_fim):
         cursor = connections['default'].cursor()
         cursor.execute(self.sql_statement + """
+              AND baixado = 0
               AND ((Data_Vencimento BETWEEN %s AND %s
                     AND Pagamento_Data IS NULL)
                    OR Pagamento_Data BETWEEN %s AND %s)

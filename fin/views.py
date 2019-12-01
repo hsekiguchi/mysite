@@ -9,44 +9,6 @@ from django.contrib.auth.decorators import login_required
 from .models import Sangria, Produto, Caderneta, Comanda, Movimento, Fornecedor
 from .models import BoletoData, BoletoFornecedor
 
-
-# class IndexView(generic.ListView):
-#     template_name = 'fin/index.html'
-#     context_object_name = 'latest_question_list'
-#
-#     def get_queryset(self):
-#         """Return the last five published questions."""
-#         return Question.objects.order_by('-pub_date')[:5]
-#
-#
-# class DetailView(generic.DetailView):
-#     model = Question
-#     template_name = 'fin/detail.html'
-#
-#
-# class ResultsView(generic.DetailView):
-#     model = Question
-#     template_name = 'fin/results.html'
-#
-#
-# def vote(request, question_id):
-#     question = get_object_or_404(Question, pk=question_id)
-#     try:
-#         selected_choice = question.choice_set.get(pk=request.POST['choice'])
-#     except (KeyError, Choice.DoesNotExist):
-#         # Redisplay the question voting form.
-#         return render(request, 'fin/detail.html', {
-#             'question': question,
-#             'error_message': "You didn't select a choice.",
-#         })
-#     else:
-#         selected_choice.votes += 1
-#         selected_choice.save()
-#         # Always return an HttpResponseRedirect after successfully dealing
-#         # with POST data. This prevents data from being posted twice if a
-#         # user hits the Back button.
-#         return HttpResponseRedirect(reverse('fin:results', args=(question.id,)))
-
 @login_required
 def sangria(request):
     context = {'titulo': 'Sangria', 'find_date': True, 'view': 'fin:sangria' }
@@ -86,25 +48,20 @@ def produto(request):
         inclui_inativo = False
     request.session['inclui_inativo'] = inclui_inativo
 
-    checkbox_list = [
-        {'category':"Situação", 'options': [
-            {'name': 'checkbox_inativo', 'label': "incluir inativo", 'value': "S", 'checked': inclui_inativo, }]}
-    ]
-
     texto_pesquisa_str = request.POST.get("texto_pesquisa","")
 
-    context.update({'texto_pesquisa': texto_pesquisa_str, 'checkbox_list': checkbox_list})
-    if texto_pesquisa_str != "":
-        try:
-            codigo_produto = int(texto_pesquisa_str)
-        except ValueError:
-            codigo_produto = 0
-        param = {'texto_pesquisa_str': texto_pesquisa_str, 'codigo_produto' : codigo_produto,
-                 'inclui_inativo': inclui_inativo, }
-        p = Produto()
-        produto_list = p.load(param)
+    context.update({'texto_pesquisa': texto_pesquisa_str, })
+    #if texto_pesquisa_str != "":
+    try:
+        codigo_produto = int(texto_pesquisa_str)
+    except ValueError:
+        codigo_produto = 0
+    param = {'texto_pesquisa_str': texto_pesquisa_str, 'codigo_produto' : codigo_produto,
+             'inclui_inativo': inclui_inativo, }
+    p = Produto()
+    produto_list = p.load(param)
 
-        context.update(produto_list)
+    context.update(produto_list)
     return render(request, 'fin/list.html', context)
 
 
@@ -213,11 +170,6 @@ def boleto(request):
         inclui_baixado = False
     request.session['inclui_baixado'] = inclui_baixado
 
-    checkbox_list = [
-        {'category':"Situação", 'options': [
-            {'name': 'checkbox_baixado', 'label': "incluir baixado", 'value': "1", 'checked': inclui_baixado, }]}
-    ]
-
     if request.method == "POST":
         texto_pesquisa_str = request.POST.get("texto_pesquisa","")
         #obter o código do fornecedor da pesquisa anterior
@@ -231,18 +183,17 @@ def boleto(request):
     else:
         codigo_cfd_str = request.GET.get("codigo_cfd","")
         texto_pesquisa_str = codigo_cfd_str
-    context.update({'texto_pesquisa': texto_pesquisa_str, 'codigo_cfd': codigo_cfd_str,
-                    'checkbox_list': checkbox_list,})
+    context.update({'texto_pesquisa': texto_pesquisa_str, 'codigo_cfd': codigo_cfd_str,})
 
-    if codigo_cfd_str != "":
-        try:
-            codigo_cfd = int(codigo_cfd_str)
-        except ValueError:
-            codigo_cfd = 0
-        param = {'codigo_cfd' : codigo_cfd, 'inclui_baixado': inclui_baixado, }
-        b = BoletoFornecedor()
-        boleto_list = b.load(param)
-        context.update(boleto_list)
+    try:
+        codigo_cfd = int(codigo_cfd_str)
+    except ValueError:
+        codigo_cfd = 0
+    param = {'codigo_cfd' : codigo_cfd, 'inclui_baixado': inclui_baixado, }
+
+    b = BoletoFornecedor()
+    boleto_list = b.load(param)
+    context.update(boleto_list)
     return render(request, 'fin/boleto.html', context)
 
 
