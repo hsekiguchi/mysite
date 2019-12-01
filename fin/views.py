@@ -49,9 +49,8 @@ def produto(request):
     request.session['inclui_inativo'] = inclui_inativo
 
     texto_pesquisa_str = request.POST.get("texto_pesquisa","")
-
     context.update({'texto_pesquisa': texto_pesquisa_str, })
-    #if texto_pesquisa_str != "":
+
     try:
         codigo_produto = int(texto_pesquisa_str)
     except ValueError:
