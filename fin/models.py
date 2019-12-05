@@ -58,6 +58,9 @@ class Produto:
         WHERE (p.codigo_produto = %s
         OR p.descricao like %s)
     """
+    sql_orderby = """
+        ORDER BY p.[descricao]
+    """
     table_header = [
         'Cod Produto',
         'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
@@ -84,6 +87,7 @@ class Produto:
             statement = self.sql_statement
             if not param['inclui_inativo']:
                 statement += " AND p.[ativo] = 'S' "
+            statement += self.sql_orderby
             cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa'] + '%'])
             lista_produto = cursor.fetchall()
             table.update({'header': self.table_header,
@@ -287,11 +291,9 @@ class Movimento:
 
     def load(self, data):
         cursor = connections['default'].cursor()
-        cursor.execute(self.sql_statement_caixa, [data])
-
-        list_movimento = cursor.fetchall()
-
         #obter lista dos códigos de movimento
+        cursor.execute(self.sql_statement_caixa, [data])
+        list_movimento = cursor.fetchall()
         movimentos = ''
         first_time = True
         for movimento in list_movimento:
