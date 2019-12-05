@@ -12,26 +12,33 @@ from .models import BoletoData, BoletoFornecedor
 @login_required
 def sangria(request):
     context = {'titulo': 'Sangria', 'find_date': True, 'view': 'fin:sangria' }
-
-    data_ini_str = request.POST.get("data_ini","")
-    if data_ini_str == "":
-        data_ini=datetime.now()
-    else:
-        data_ini=parse_date(data_ini_str)
-
-    submit_type = request.POST.get("submit","submit")
-    if submit_type == "next":
-        data_ini +=  timedelta(days=1)
-    elif submit_type == "previous":
-        data_ini -=  timedelta(days=1)
-
-    data_ini_str = data_ini.strftime("%Y-%m-%d")
-    context.update({'data_ini': data_ini_str,})
-
+    #if Post, check input, keep it in session and redirect
     if request.method == "POST":
+        data_ini_str = request.POST.get("data_ini","")
+        try:
+            data_ini = parse_date(data_ini_str)
+        except:
+            data_ini = datetime.now()
+        submit_type = request.POST.get("submit","submit")
+        if submit_type == "next":
+            data_ini +=  timedelta(days=1)
+        elif submit_type == "previous":
+            data_ini -=  timedelta(days=1)
+        prg_last_data = {'view': context['view'], 'data_ini': data_ini.strftime("%Y-%m-%d"),}
+        request.session['prg_last_data'] = prg_last_data
+        return redirect(context['view'])
+
+    prg_last_data = request.session.get('prg_last_data',{})
+    if len(prg_last_data) > 1 and prg_last_data.get('view', '') == context['view']:
+        data_ini_str = prg_last_data['data_ini']
+        del request.session['prg_last_data']
         sg = Sangria()
         sangria_list = sg.load(data_ini_str)
         context.update(sangria_list)
+    else:
+        data_ini = datetime.now()
+        data_ini_str = data_ini.strftime("%Y-%m-%d")
+    context.update({'data_ini': data_ini_str,})
 
     return render(request, 'fin/list.html', context)
 
@@ -42,87 +49,128 @@ def produto(request):
 
     if request.method == "POST":
         inclui_inativo = True if request.POST.get("checkbox_inativo","") == "S" else False
-    elif 'inclui_inativo' in request.session:
-        inclui_inativo = request.session['inclui_inativo']
+        texto_pesquisa_str = request.POST.get("texto_pesquisa", "")
+        try:
+            codigo_produto = int(texto_pesquisa_str)
+        except ValueError:
+            codigo_produto = 0
+        prg_last_data =  {'view': context['view'], 'texto_pesquisa': texto_pesquisa_str,
+                          'codigo_produto' : codigo_produto, 'inclui_inativo': inclui_inativo, }
+        request.session['prg_last_data'] = prg_last_data
+        request.session['inclui_inativo'] = inclui_inativo
+        return redirect(context['view'])
+
+    prg_last_data = request.session.get('prg_last_data',{})
+    if len(prg_last_data) > 1 and prg_last_data['view'] == context['view']:
+        pass
     else:
-        inclui_inativo = False
-    request.session['inclui_inativo'] = inclui_inativo
-
-    texto_pesquisa_str = request.POST.get("texto_pesquisa","")
-    context.update({'texto_pesquisa': texto_pesquisa_str, })
-
-    try:
-        codigo_produto = int(texto_pesquisa_str)
-    except ValueError:
-        codigo_produto = 0
-    param = {'texto_pesquisa_str': texto_pesquisa_str, 'codigo_produto' : codigo_produto,
-             'inclui_inativo': inclui_inativo, }
+        prg_last_data = {'inclui_inativo': request.session.get('inclui_inativo', False),
+                         'texto_pesquisa': "",}
     p = Produto()
-    produto_list = p.load(param)
-
+    produto_list = p.load(prg_last_data)
     context.update(produto_list)
+    context.update(prg_last_data)
+
     return render(request, 'fin/list.html', context)
 
 
 @login_required
 def caderneta(request):
     context = {'titulo': 'Caderneta', 'view': 'fin:caderneta' }
-    codigo_cliente_str = request.POST.get("codigo_cliente","")
-    context.update({'codigo_cliente': codigo_cliente_str})
+    #if Post, check input, keep it in session and redirect
+    if request.method == "POST":
+        codigo_cliente_str = request.POST.get("codigo_cliente","")
+        data_ini_str = request.POST.get("data_ini","")
+        data_fim_str = request.POST.get("data_fim","")
+        try:
+            data_ini=parse_date(data_ini_str)
+        except:
+            data_ini = datetime.now()
+        try:
+            data_fim=parse_date(data_fim_str)
+        except:
+            data_fim = datetime.now()
+        prg_last_data = {'view': context['view'], 'codigo_cliente': codigo_cliente_str,
+                         'data_ini': data_ini.strftime("%Y-%m-%d"),
+                         'data_fim': data_fim.strftime("%Y-%m-%d"),}
+        request.session['prg_last_data'] = prg_last_data
+        return redirect(context['view'])
 
-    data_ini_str = request.POST.get("data_ini","")
-    data_ini=parse_date(data_ini_str)
-    context.update({'data_ini': data_ini_str})
-
-    data_fim_str = request.POST.get("data_fim","")
-    data_fim=parse_date(data_fim_str)
-    context.update({'data_fim': data_fim_str})
-
-    if codigo_cliente_str != "":
+    prg_last_data = request.session.get('prg_last_data',{})
+    if len(prg_last_data) > 1 and prg_last_data.get('view', '') == context['view']:
+        del request.session['prg_last_data']
         c = Caderneta()
-        context.update(c.load(codigo_cliente_str, data_ini.strftime("%Y-%m-%d"), data_fim.strftime("%Y-%m-%d")))
+        caderneta_list = c.load(prg_last_data['codigo_cliente'],
+                    prg_last_data['data_ini'], prg_last_data['data_fim'])
+        context.update(caderneta_list)
+        context.update(prg_last_data)
+
     return render(request, 'fin/caderneta.html', context)
+
 
 def comanda(request):
     context = {'titulo': 'Comanda', 'find_text': True, 'view': 'fin:comanda'  }
-    texto_pesquisa_str = request.POST.get("texto_pesquisa","")
-    context.update({'texto_pesquisa': texto_pesquisa_str})
-    if texto_pesquisa_str != "":
+    #if Post, check input, keep it in session and redirect
+    if request.method == "POST":
+        texto_pesquisa_str = request.POST.get("texto_pesquisa","")
         try:
             codigo_comanda = int(texto_pesquisa_str)
         except ValueError:
             codigo_comanda = 0
-        codigo_comanda_str = '@' + str(codigo_comanda).zfill(4)
+        prg_last_data = {'view': context['view'], 'codigo_comanda': codigo_comanda,
+                         'texto_pesquisa': texto_pesquisa_str,}
+        request.session['prg_last_data'] = prg_last_data
+        return redirect(context['view'])
+
+    prg_last_data = request.session.get('prg_last_data', {})
+    if len(prg_last_data) > 1 and prg_last_data.get('view', '') == context['view']:
+        del request.session['prg_last_data']
+        codigo_comanda_str = '@' + str(prg_last_data['codigo_comanda']).zfill(4)
         p = Comanda()
         produto_list = p.load(codigo_comanda_str)
         context.update(produto_list)
+        context.update(prg_last_data)
 
     return render(request, 'fin/list.html', context)
 
 
 @login_required
 def movimento(request):
-    context = {'titulo': 'Movimento', 'find_date': True, 'view': 'fin:movimento' }
+    context = {'titulo': 'Movimento', 'find_date': True, 'view': 'fin:movimento'}
 
-    data_ini_str = request.POST.get("data_ini","")
-    if data_ini_str == "":
-        data_ini=datetime.now()
-    else:
-        data_ini=parse_date(data_ini_str)
-
-    submit_type = request.POST.get("submit","submit")
-    if submit_type == "next":
-        data_ini +=  timedelta(days=1)
-    elif submit_type == "previous":
-        data_ini -=  timedelta(days=1)
-
-    data_ini_str = data_ini.strftime("%Y-%m-%d")
-    context.update({'data_ini': data_ini_str,})
-
+    #if Post, check input, keep it in session and redirect
     if request.method == "POST":
+        data_ini_str = request.POST.get("data_ini","")
+        try:
+            data_ini = parse_date(data_ini_str)
+        except:
+            data_ini = datetime.now()
+
+        submit_type = request.POST.get("submit","submit")
+        if submit_type == "next":
+            data_ini +=  timedelta(days=1)
+        elif submit_type == "previous":
+            data_ini -=  timedelta(days=1)
+
+        prg_last_data = {'view': context['view'], 'data_ini': data_ini.strftime("%Y-%m-%d"),}
+        request.session['prg_last_data'] = prg_last_data
+
+        return redirect(context['view'])
+
+    prg_last_data = request.session.get('prg_last_data',{})
+    if len(prg_last_data) > 1 and prg_last_data['view'] == context['view']:
+        data_ini_str = prg_last_data['data_ini']
+
+        del request.session['prg_last_data']
+
         mv = Movimento()
         list = mv.load(data_ini_str)
         context.update(list)
+    else:
+        data_ini = datetime.now()
+        data_ini_str = data_ini.strftime("%Y-%m-%d")
+
+    context.update({'data_ini': data_ini_str,})
 
     return render(request, 'fin/list.html', context)
 
@@ -154,6 +202,7 @@ def fornecedor(request):
         #context.update({'header': produto_list['header'], 'list': produto_list['data']})
         context.update(fornecedor_list)
     return render(request, 'fin/list_select.html', context)
+
 
 
 @login_required

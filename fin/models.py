@@ -79,12 +79,12 @@ class Produto:
                 {'name': 'checkbox_inativo', 'label': "incluir inativo", 'value': "S", 'checked': param['inclui_inativo'], }]}
         ]
         table = {'checkbox_list': checkbox_list,}
-        if param['texto_pesquisa_str'] != "":
+        if param['texto_pesquisa'] != "":
             cursor = connections['default'].cursor()
             statement = self.sql_statement
             if not param['inclui_inativo']:
                 statement += " AND p.[ativo] = 'S' "
-            cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa_str'] + '%'])
+            cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa'] + '%'])
             lista_produto = cursor.fetchall()
             table.update({'header': self.table_header,
                            'list': lista_produto,})
@@ -438,7 +438,7 @@ class Boleto:
     sql_orderby = """
             ORDER  BY baixado,
                       pagamento_data desc, 
-                      data_vencimento desc
+                      data_vencimento
     """
     table_header = [
         'Bx',
@@ -493,15 +493,15 @@ class BoletoData(Boleto):
             ORDER  BY data_vencimento
     """
 
-    def load(self, data_ini, data_fim):
+    def load(self, data_ini_str, data_fim_str):
         cursor = connections['default'].cursor()
         cursor.execute(self.sql_statement + """
               AND baixado = 0
               AND ((Data_Vencimento BETWEEN %s AND %s
                     AND Pagamento_Data IS NULL)
                    OR Pagamento_Data BETWEEN %s AND %s)
-        """ + self.sql_orderby, [data_ini, data_fim,
-                                 data_ini+" 00:00:00", data_fim+" 23:59:59"])
+        """ + self.sql_orderby, [data_ini_str, data_fim_str,
+                                 data_ini_str+" 00:00:00", data_fim_str+" 23:59:59"])
         table = {'header':self.table_header,
                  'list':cursor.fetchall()}
         return table
