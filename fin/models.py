@@ -268,8 +268,9 @@ class Movimento:
               ,count(*) as cupons
               ,sum(total) as movimento
               ,sum(total)/count(*) as media
+              ,sum(iif(codigo_caixa = 999,total,0)) as acerto
           FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
-          where num_cartao !=''
+          where codigo_tipo_movimento = 1
               and codigo_cliente not in (55, 97, 98, 99)
               and codigo_movimento in (
     """
@@ -282,6 +283,7 @@ class Movimento:
         'Cupom',
         'Movimento',
         'Média&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Acerto&#xa0;&#xa0;&#xa0;&#xa0;',
         'Caixa',
         'Usuário',
         'Data',
@@ -323,6 +325,7 @@ class Movimento:
             lista.append(list(linha))
             lista[lin][2] = locale.currency(linha[2])
             lista[lin][3] = locale.currency(linha[3])
+            lista[lin][4] = locale.currency(linha[4])
             movimento = list_movimento[lin]
             #if linha[0] == movimento[0]:
             lista[lin].extend(movimento[1:])
