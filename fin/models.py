@@ -43,6 +43,7 @@ class Produto:
             ,FORMAT(p.[preco_venda], 'C', 'pt-BR')
             ,p.[preco_custo]
             ,iif(p.preco_custo = 0, 0, cast((p.preco_venda/p.preco_custo - 1) as decimal(18,2)))
+            ,convert(varchar, p.[data_alteracao], 3)
             ,p.[validade_dias]
             ,g.[descricao]
             ,p.[codigo_grupo]
@@ -67,6 +68,7 @@ class Produto:
         'Preco&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         'Custo',
         'Margem',
+        'Alteração',
         'Validade',
         'Grupo',
         'Cod',
