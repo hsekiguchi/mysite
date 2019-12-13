@@ -333,7 +333,7 @@ class Movimento:
             lista[lin].extend(movimento[1:])
             lin = lin + 1
         lista.append(['Total', cupons, locale.currency(total_movimento),
-                     locale.currency(total_movimento/cupons),'','','','',''])
+                     locale.currency(total_movimento/cupons),'','','','','',''])
 
         table = {'header': self.table_header,
                  'list': lista}
