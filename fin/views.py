@@ -263,8 +263,8 @@ def boleto_data(request):
 
     submit_type = request.POST.get("submit","submit")
     if submit_type == "next":
-        data_ini +=  timedelta(days=1)
-        data_fim = data_ini
+        data_fim +=  timedelta(days=1)
+        data_ini = data_fim
     elif submit_type == "previous":
         data_ini -=  timedelta(days=1)
         data_fim = data_ini
