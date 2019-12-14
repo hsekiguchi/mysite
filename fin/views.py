@@ -249,34 +249,51 @@ def boleto(request):
 def boleto_data(request):
     context = {'titulo': 'Boleto', 'find_date': True, 'show_tot': True, 'view': 'fin:boleto_data' }
 
-    data_ini_str = request.POST.get("data_ini","")
-    if data_ini_str == "":
-        data_ini=datetime.now()
+    if request.method == "POST":
+        data_ini_str = request.POST.get("data_ini", "")
+        try:
+            data_ini=parse_date(data_ini_str)
+            if data_ini == None:
+                raise Exception('Invalid date format.')
+        except:
+            data_ini = datetime.now()
+
+        data_fim_str = request.POST.get("data_fim", "")
+        try:
+            data_fim = parse_date(data_fim_str)
+            if data_fim == None:
+                raise Exception('Invalid date format.')
+        except:
+            data_fim = datetime.now()
+
+        submit_type = request.POST.get("submit", "submit")
+        if submit_type == "next":
+            data_fim +=  timedelta(days=1)
+            data_ini = data_fim
+        elif submit_type == "previous":
+            data_ini -=  timedelta(days=1)
+            data_fim = data_ini
+
+        prg_last_data = {'view': context['view'],
+                         'data_ini': data_ini.strftime("%Y-%m-%d"), 'data_fim': data_fim.strftime("%Y-%m-%d"), }
+        request.session['prg_last_data'] = prg_last_data
+        return redirect(context['view'])
+
+    prg_last_data = request.session.get('prg_last_data',{})
+    if len(prg_last_data) > 1 and prg_last_data['view'] == context['view']:
+        data_ini_str = prg_last_data['data_ini']
+        data_fim_str = prg_last_data['data_fim']
+        del request.session['prg_last_data']
+
+        b = BoletoData()
+        context.update(b.load(data_ini_str, data_fim_str))
     else:
-        data_ini=parse_date(data_ini_str)
+        data_ini_str = datetime.now().strftime("%Y-%m-%d")
+        data_fim_str = datetime.now().strftime("%Y-%m-%d")
 
-    data_fim_str = request.POST.get("data_fim", "")
-    if data_fim_str == "":
-        data_fim = datetime.now()
-    else:
-        data_fim = parse_date(data_fim_str)
-
-    submit_type = request.POST.get("submit","submit")
-    if submit_type == "next":
-        data_fim +=  timedelta(days=1)
-        data_ini = data_fim
-    elif submit_type == "previous":
-        data_ini -=  timedelta(days=1)
-        data_fim = data_ini
-
-    data_ini_str = data_ini.strftime("%Y-%m-%d")
-    data_fim_str = data_fim.strftime("%Y-%m-%d")
     context.update({'data_ini': data_ini_str,
                     'data_fim': data_fim_str,})
 
-    if request.method == "POST":
-        b = BoletoData()
-        context.update(b.load(data_ini_str, data_fim_str))
     return render(request, 'fin/boleto.html', context)
 
 
