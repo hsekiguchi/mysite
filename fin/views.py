@@ -143,6 +143,8 @@ def movimento(request):
         data_ini_str = request.POST.get("data_ini","")
         try:
             data_ini = parse_date(data_ini_str)
+            if data_ini == None:
+                raise Exception('Invalid date format.')
         except:
             data_ini = datetime.now()
 
