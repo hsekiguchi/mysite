@@ -3,18 +3,20 @@
 {% block form_field %}
 <div class="form-group row">
     {% if find_text %}
-    <label for="texto_pesquisa" class="col-sm-1 col-form-label">Fornecedor</label>
-    <div class="col-sm-6">
+    <label for="texto_pesquisa" class="col-sm-2 col-form-label">Fornecedor</label>
+    <div class="col-sm-4">
         <input type="text" class="form-control" name="texto_pesquisa" id="texto_pesquisa" value="{{ texto_pesquisa }}" onfocus="this.select();">
     </div>
     {% endif %}
     {% if find_date %}
-    <label for="data_ini" class="col-sm-4 col-form-label">Data Inicial</label>
-    <div class="col-sm-7">
+    <label for="data_ini" class="col-sm-2 col-form-label">Data Inicial</label>
+    <div class="col-sm-4">
         <input type="text" class="form-control start-date" id="data_ini" name="data_ini" autocomplete="off" placeholder="Entre com data inicial" value="{{ data_ini }}">
     </div>
-    <label for="data_fim" class="col-sm-4 col-form-label">Data Final</label>
-    <div class="col-sm-7">
+</div>
+<div class="form-group row">
+    <label for="data_fim" class="col-sm-2 col-form-label">Data Final</label>
+    <div class="col-sm-4">
         <input type="text" class="form-control end-date" id="data_fim" name="data_fim" autocomplete="off" placeholder="Entre com data final" value="{{ data_fim }}">
     </div>
     {% endif %}

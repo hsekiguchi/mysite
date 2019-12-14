@@ -2,14 +2,14 @@
 {% block form_field %}
 <div class="form-group row">
     {% if find_text %}
-    <label for="texto_pesquisa" class="col-sm-1 col-form-label">{{titulo}}</label>
-    <div class="col-sm-5">
+    <label for="texto_pesquisa" class="col-sm-2 col-form-label">{{titulo}}</label>
+    <div class="col-sm-4">
         <input type="text" class="form-control" name="texto_pesquisa" id="texto_pesquisa" value="{{ texto_pesquisa }}" onfocus="this.select();">
     </div>
     {% endif %}
     {% if find_date %}
-    <label for="data_ini" class="col-sm-1 col-form-label">Data</label>
-    <div class="col-sm-6">
+    <label for="data_ini" class="col-sm-2 col-form-label">Data</label>
+    <div class="col-sm-4">
         <input type="text" class="form-control start-date" id="data_ini" name="data_ini" autocomplete="off" placeholder="Entre com data" value="{{ data_ini }}">
     </div>
     {% endif %}
