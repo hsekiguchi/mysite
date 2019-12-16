@@ -297,7 +297,3 @@ def boleto_data(request):
                     'data_fim': data_fim_str,})
 
     return render(request, 'fin/boleto.html', context)
-
-
-
-

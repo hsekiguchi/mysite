@@ -268,12 +268,12 @@ class Movimento:
     sql_statement_fechamento = """
         SELECT [codigo_movimento]
               ,count(*) as cupons
-              ,sum(total) as movimento
-              ,sum(total)/count(*) as media
+              ,sum(iif(codigo_caixa = 999,0,total)) as movimento
+              ,sum(iif(codigo_caixa = 999,0,total))/count(*) as media
               ,sum(iif(codigo_caixa = 999,total,0)) as acerto
           FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
           where codigo_tipo_movimento = 1
-              and codigo_cliente not in (55, 97, 98, 99)
+              and codigo_cliente not in (55)
               and codigo_movimento in (
     """
     sql_orderby_fechamento = """
