@@ -25,9 +25,16 @@
                 <li class="nav-item"><a class="sidebar-link" href="{% url 'fin:sangria' %}">
                     <span class="icon-holder"><i class="c-red-500 ti-wallet"></i> </span>
                     <span class="title">Sangria</span></a></li>
-                <li class="nav-item"><a class="sidebar-link" href="{% url 'fin:produto' %}">
+                <li class="nav-item dropdown"><a class="dropdown-toggle" href="javascript:void(0);">
                     <span class="icon-holder"><i class="c-green-500 ti-package"></i> </span>
-                    <span class="title">Produto</span></a></li>
+                    <span class="title">Produto</span>
+                    <span class="arrow"><i class="ti-angle-right"></i></span></a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item dropdown"><a href="{% url 'fin:produto' %}"><span>Consulta</span></a></li>
+                        <li class="nav-item dropdown"><a href="{% url 'fin:boleto' %}"}><span>Desatualizados</span></a></li>
+                        <li class="nav-item dropdown"><a href="{% url 'fin:atualiza_cardapio' %}"}><span>Atualizar Cardápio</span></a></li>
+                    </ul>
+                </li>
                 <li class="nav-item"><a class="sidebar-link" href="{% url 'fin:caderneta' %}">
                     <span class="icon-holder"><i class="c-orange-500 ti-bag"></i> </span>
                     <span class="title">Caderneta</span></a></li>

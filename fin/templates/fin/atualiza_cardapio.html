@@ -1,0 +1,16 @@
+{% extends "./base.html" %}
+{% block form_button %}
+<div>
+    <button type="submit" id="submit_button" value="submit" class="btn btn-primary">Consultar</button>
+    <button type="submit" name="submit" id="update_button" value="update" class="btn btn-primary" style="margin-left:20px">Atualizar</button>
+</div>
+{% endblock form_button %}
+
+{% block header_block %}
+    <div>
+    {% if timestamp %}
+        <p>Última atualização do cardápio em {{timestamp}}</p>
+    {% endif %}
+    </div>
+{% endblock header_block %}
+

@@ -84,7 +84,11 @@
                             {% block trailer_table %}{% endblock trailer_table %}
                         </table>
                         {% else %}
-                        <p>Sem registo.</p>
+                            {% if message %}
+                                <p>{{ message }}</p>
+                            {% else %}
+                                <p>Sem registo.</p>
+                            {% endif %}
                         {% endif %}
                     {% endblock main_block %}
                     </div>

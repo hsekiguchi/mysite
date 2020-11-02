@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Sangria, Produto, Caderneta, Comanda, Movimento, Fornecedor
 from .models import BoletoData, BoletoFornecedor
+from .models import Preco, PrecoCardapio
 
 @login_required
 def sangria(request):
@@ -297,3 +298,55 @@ def boleto_data(request):
                     'data_fim': data_fim_str,})
 
     return render(request, 'fin/boleto.html', context)
+
+@login_required
+def produto_atualizar_cardapio(request):
+    context = {'titulo': 'Atualiza Cardápio', 'view': 'fin:atualiza_cardapio' }
+
+    if request.method == "POST":
+        submit_type = request.POST.get("submit", "submit")
+        if submit_type == "submit":
+            p = Preco()
+            lista_preco_novo = p.load()
+            request.session['lista_preco_novo'] = lista_preco_novo
+
+        elif submit_type == "update":
+            if 'lista_preco_novo' in request.session:
+                lista_preco_novo = request.session['lista_preco_novo']
+                pc = PrecoCardapio()
+                pc.update(lista_preco_novo)
+                request.session['cardapio_atualizado'] = True
+        return redirect(context['view'])
+
+    if 'lista_preco_novo' in request.session:
+        # [0] código, [1] preço
+        pc = PrecoCardapio()
+        lista_preco_cardapio = pc.load()
+        lista_cardapio = lista_preco_cardapio['list']
+
+        # [0] código, [1] descrição, [2] preço
+        lista_preco_novo = request.session['lista_preco_novo']
+
+        lista = []
+        linha = 0
+        for linha_nova in lista_preco_novo['list']:
+            if linha_nova[0] < int(lista_cardapio[linha][0]):
+                continue
+            while linha_nova[0] > int(lista_cardapio[linha][0]):
+                lista.append([lista_cardapio[linha][0], 'Inativo', '-', lista_cardapio[linha][1]])
+                linha += 1
+            if linha_nova[0] == int(lista_cardapio[linha][0]):
+                if linha_nova[2] != lista_cardapio[linha][1]:
+                    lista.append([linha_nova[0], linha_nova[1], linha_nova[2], lista_cardapio[linha][1]])
+                linha += 1
+
+        table = {'timestamp' : lista_preco_cardapio['timestamp'],
+                 'header': lista_preco_novo['header'],
+                 'list': lista}
+        context.update(table)
+
+    if 'cardapio_atualizado' in request.session:
+        del request.session['lista_preco_novo']
+        del request.session['cardapio_atualizado']
+
+    return render(request, 'fin/atualiza_cardapio.html', context)

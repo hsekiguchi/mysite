@@ -1,5 +1,11 @@
 import locale
+import time
+import os
+from django.conf import settings
 from django.db import connections
+
+from google.oauth2 import service_account
+import gspread
 
 class Sangria:
     sql_statement = """
@@ -518,3 +524,64 @@ class BoletoData(Boleto):
 
     def __str__(self):
         return ' .-. '
+
+
+class Preco:
+    sql_statement = """
+        select 
+            codigo_produto,
+            descricao, 
+            FORMAT(preco_venda, 'C', 'pt-BR')
+        from [DTMLOCAL].[dbo].[tb_cad_produto] 
+        where codigo_produto < 10000
+        and ativo = 'S'
+        order by codigo_produto
+    """
+    table_header = [
+        'Cod Produto',
+        'Descrição&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Preço Sistema',
+        'Preço Cardápio',
+    ]
+
+    def load(self):
+        cursor = connections['default'].cursor()
+        cursor.execute(self.sql_statement)
+        ts = time.gmtime()
+        table = {'header':self.table_header,
+                 'list': cursor.fetchall(),
+                 'timestamp': time.strftime("%d/%m/%Y %H:%M", ts)}
+        return table
+
+    def __str__(self):
+        return ' .-. '
+
+class PrecoCardapio:
+
+    def load(self):
+        module_dir = os.path.dirname(__file__)
+        LOCATION = os.path.join(module_dir, getattr(settings, "GOOGLE_KEY_LOCATION", None))
+        DOC_ID = getattr(settings, "CARDAPIO_DOC_ID", None)
+        CURRENT_PRICE_SHEET_NAME = getattr(settings, "CARDAPIO_CURRENT_PRICE_SHEET_NAME", None)
+
+        gc = gspread.service_account(filename = LOCATION)
+        doc = gc.open_by_key(DOC_ID)
+        sheet = doc.worksheet(CURRENT_PRICE_SHEET_NAME)
+
+        list = sheet.get_all_values()
+        #obter timestamp da última atualização
+        ts = list[0][2]
+        #eliminar primeira linha de cabeçalho
+        del list[0]
+
+        table = {'list': list,
+                 'timestamp': ts}
+        return table
+
+    def update(self, param):
+        pass
+
+    def __str__(self):
+        return ' .-. '
+
+
