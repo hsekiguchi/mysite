@@ -531,6 +531,7 @@ class Preco:
         select 
             codigo_produto,
             descricao, 
+            FORMAT( data_alteracao, 'dd/MM/yyyy HH:mm', 'pt-BR' ),
             FORMAT(preco_venda, 'C', 'pt-BR')
         from [DTMLOCAL].[dbo].[tb_cad_produto] 
         where codigo_produto < 10000
@@ -540,6 +541,7 @@ class Preco:
     table_header = [
         'Cod Produto',
         'Descrição&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Data última alteração',
         'Preço Sistema',
         'Preço Cardápio',
     ]
@@ -547,7 +549,7 @@ class Preco:
     def load(self):
         cursor = connections['default'].cursor()
         cursor.execute(self.sql_statement)
-        ts = time.gmtime()
+        ts = time.localtime()
         table = {'header':self.table_header,
                  'list': cursor.fetchall(),
                  'timestamp': time.strftime("%d/%m/%Y %H:%M", ts)}
@@ -570,7 +572,7 @@ class PrecoCardapio:
 
         list = sheet.get_all_values()
         #obter timestamp da última atualização
-        ts = list[0][2]
+        ts = list[0][4]
         #eliminar primeira linha de cabeçalho
         del list[0]
 
@@ -579,6 +581,21 @@ class PrecoCardapio:
         return table
 
     def update(self, param):
+        module_dir = os.path.dirname(__file__)
+        LOCATION = os.path.join(module_dir, getattr(settings, "GOOGLE_KEY_LOCATION", None))
+        DOC_ID = getattr(settings, "CARDAPIO_DOC_ID", None)
+        CURRENT_PRICE_SHEET_NAME = getattr(settings, "CARDAPIO_CURRENT_PRICE_SHEET_NAME", None)
+
+        gc = gspread.service_account(filename = LOCATION)
+        doc = gc.open_by_key(DOC_ID)
+        sheet = doc.worksheet(CURRENT_PRICE_SHEET_NAME)
+        doc.values_clear("'"+CURRENT_PRICE_SHEET_NAME+"'!A1:B2000")
+        list = param['list']
+        # for row in param['list']:
+        #     list.append([row[0], row[2]])
+        sheet.update('A2:D' + str(len(list)+1), list)
+        sheet.update('E1', param['timestamp'])
+
         pass
 
     def __str__(self):

@@ -318,6 +318,7 @@ def produto_atualizar_cardapio(request):
                 request.session['cardapio_atualizado'] = True
         return redirect(context['view'])
 
+    lista = []
     if 'lista_preco_novo' in request.session:
         # [0] código, [1] preço
         pc = PrecoCardapio()
@@ -327,26 +328,32 @@ def produto_atualizar_cardapio(request):
         # [0] código, [1] descrição, [2] preço
         lista_preco_novo = request.session['lista_preco_novo']
 
-        lista = []
         linha = 0
+        maxlinha = len(lista_cardapio)
         for linha_nova in lista_preco_novo['list']:
+            if linha >= maxlinha:
+                break
             if linha_nova[0] < int(lista_cardapio[linha][0]):
                 continue
             while linha_nova[0] > int(lista_cardapio[linha][0]):
-                lista.append([lista_cardapio[linha][0], 'Inativo', '-', lista_cardapio[linha][1]])
+                lista.append([lista_cardapio[linha][0], 'Inativo', linha_nova[2], '-', lista_cardapio[linha][3]])
                 linha += 1
             if linha_nova[0] == int(lista_cardapio[linha][0]):
-                if linha_nova[2] != lista_cardapio[linha][1]:
-                    lista.append([linha_nova[0], linha_nova[1], linha_nova[2], lista_cardapio[linha][1]])
+                if linha_nova[3] != lista_cardapio[linha][3]:
+                    lista.append([linha_nova[0], linha_nova[1], linha_nova[2], linha_nova[3], lista_cardapio[linha][3]])
                 linha += 1
+
 
         table = {'timestamp' : lista_preco_cardapio['timestamp'],
                  'header': lista_preco_novo['header'],
                  'list': lista}
         context.update(table)
 
-    if 'cardapio_atualizado' in request.session:
-        del request.session['lista_preco_novo']
-        del request.session['cardapio_atualizado']
+    #se o cardápio foi atualizado ou se não houve alteração no preço, não mudar mais nada
+    if 'cardapio_atualizado' in request.session or len(lista) == 0:
+        if 'lista_preco_novo' in request.session:
+            del request.session['lista_preco_novo']
+        if 'cardapio_atualizado' in request.session:
+            del request.session['cardapio_atualizado']
 
     return render(request, 'fin/atualiza_cardapio.html', context)

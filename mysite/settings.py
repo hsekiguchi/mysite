@@ -28,6 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.0.4',
+    '192.168.0.10',
+    '192.168.1.10',
     'panicenterbtu.ddns-intelbras.com.br'
 ]
 
@@ -144,3 +146,7 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = '/fin/movimento/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+GOOGLE_KEY_LOCATION = '../panicenterfin-key.json'
+CARDAPIO_DOC_ID = '1OJfyZob271xeIK6P96HK35opw4vdXNrFJA-mroJlui0'
+CARDAPIO_CURRENT_PRICE_SHEET_NAME = 'Preco'
