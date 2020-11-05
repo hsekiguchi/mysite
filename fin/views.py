@@ -357,3 +357,51 @@ def produto_atualizar_cardapio(request):
             del request.session['cardapio_atualizado']
 
     return render(request, 'fin/atualiza_cardapio.html', context)
+
+@login_required
+def produto_desatualizado(request):
+    context = {'titulo': 'Produto Desatualizado', 'find_date': True, 'view': 'fin:produto_desatualizado'}
+
+    #if Post, check input, keep it in session and redirect
+    if request.method == "POST":
+        data_ini_str = request.POST.get("data_ini","")
+        try:
+            data_ini = parse_date(data_ini_str)
+            if data_ini == None:
+                raise Exception('Invalid date format.')
+        except:
+            data_ini = datetime.now()
+
+        submit_type = request.POST.get("submit","submit")
+        if submit_type == "next":
+            data_ini +=  timedelta(days=1)
+        elif submit_type == "previous":
+            data_ini -=  timedelta(days=1)
+
+        prg_last_data = {'view': context['view'], 'data_ini': data_ini.strftime("%Y-%m-%d"),}
+        request.session['prg_last_data'] = prg_last_data
+
+        return redirect(context['view'])
+
+    prg_last_data = request.session.get('prg_last_data',{})
+    if len(prg_last_data) > 1 and prg_last_data['view'] == context['view']:
+        data_ini_str = prg_last_data['data_ini']
+        del request.session['prg_last_data']
+
+        # pc.load deverá receber data_ini_str + 1 para incluir todos os horários desta data
+        # se data_ini_str = 04/08, para incluir todos os horários desta data, usa-se a condição
+        # data < 05/08, caso contrário, data <= 04/08, só irá retornar as datas menores ou iguais
+        # a 04/08 00:00
+        data_ini = parse_date(data_ini_str)
+        data_ini += timedelta(days=1)
+
+        pc = Preco()
+        list = pc.load(data_ini.strftime("%Y-%m-%d"))
+        context.update(list)
+    else:
+        data_ini = datetime.now()
+        data_ini_str = data_ini.strftime("%Y-%m-%d")
+
+    context.update({'data_ini': data_ini_str,})
+
+    return render(request, 'fin/list.html', context)

@@ -3,6 +3,8 @@ import time
 import os
 from django.conf import settings
 from django.db import connections
+from django.utils.dateparse import parse_date
+
 
 from google.oauth2 import service_account
 import gspread
@@ -536,9 +538,14 @@ class Preco:
         from [DTMLOCAL].[dbo].[tb_cad_produto] 
         where codigo_produto < 10000
         and ativo = 'S'
-        order by codigo_produto
     """
-    table_header = [
+    sql_orderby_produto = """
+            ORDER  BY codigo_produto
+    """
+    sql_orderby_data_alteracao = """
+            ORDER  BY data_alteracao desc
+    """
+    table_header_produto = [
         'Cod Produto',
         'Descrição&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         'Data última alteração',
@@ -546,11 +553,27 @@ class Preco:
         'Preço Cardápio',
     ]
 
-    def load(self):
+    table_header_data_alteracao = [
+        'Cod Produto',
+        'Descrição&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Data última alteração',
+        'Preço Sistema',
+    ]
+
+    def load(self, data_ini_str=None):
+
+        if data_ini_str is None:
+            sql_statement = self.sql_statement + self.sql_orderby_produto
+            table_header = self.table_header_produto
+        else:
+            sql_statement = self.sql_statement + " and data_alteracao < '" + \
+                            data_ini_str + "'"+ self.sql_orderby_data_alteracao
+            table_header = self.table_header_data_alteracao
+
         cursor = connections['default'].cursor()
-        cursor.execute(self.sql_statement)
+        cursor.execute(sql_statement)
         ts = time.localtime()
-        table = {'header':self.table_header,
+        table = {'header': table_header,
                  'list': cursor.fetchall(),
                  'timestamp': time.strftime("%d/%m/%Y %H:%M", ts)}
         return table
