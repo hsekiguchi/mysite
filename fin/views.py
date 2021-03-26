@@ -175,7 +175,7 @@ def movimento(request):
 
     context.update({'data_ini': data_ini_str,})
 
-    return render(request, 'fin/list.html', context)
+    return render(request, 'fin/movimento.html', context)
 
 
 @login_required
@@ -336,11 +336,11 @@ def produto_atualizar_cardapio(request):
             if linha_nova[0] < int(lista_cardapio[linha][0]):
                 continue
             while linha_nova[0] > int(lista_cardapio[linha][0]):
-                lista.append([lista_cardapio[linha][0], 'Inativo', linha_nova[2], '-', lista_cardapio[linha][3]])
+                lista.append([lista_cardapio[linha][0], 'Inativo', linha_nova[2], '-', '-', lista_cardapio[linha][4]])
                 linha += 1
             if linha_nova[0] == int(lista_cardapio[linha][0]):
-                if linha_nova[3] != lista_cardapio[linha][3]:
-                    lista.append([linha_nova[0], linha_nova[1], linha_nova[2], linha_nova[3], lista_cardapio[linha][3]])
+                if linha_nova[4] != lista_cardapio[linha][4]:
+                    lista.append([linha_nova[0], linha_nova[1], linha_nova[2], linha_nova[3], linha_nova[4], lista_cardapio[linha][4]])
                 linha += 1
 
 

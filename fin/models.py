@@ -288,6 +288,25 @@ class Movimento:
         )
         group by codigo_movimento
     """
+    sql_statement_cigarro = """
+        select sum(total) as valor
+        from (
+            SELECT 
+                f.total as total 
+            FROM DTMLOCAL.dbo.tb_cad_produto p,
+              [DTMLOCAL].[dbo].[tb_cad_subgrupo] s,
+              [DTMLOCAL].[dbo].[tb_cad_grupo] g,
+              DTMLOCAL.dbo."tb_fechamento_produto" f
+              LEFT JOIN DTMLOCAL.dbo.tb_caderneta_consumo c
+              ON f.codigo_venda = c.codigo_venda
+            WHERE f.codigo_produto = p.codigo_produto
+            and s.codigo_subgrupo = p.codigo_subgrupo
+            and s.codigo_grupo = g.codigo_grupo
+            and f.data = %s
+            and f.hora > '1900-01-01 00:00'
+            and g.descricao = 'CIGARRO'
+        ) t
+    """
     table_header = [
         'Código',
         'Cupom',
@@ -318,6 +337,13 @@ class Movimento:
         if first_time:
             return {}
 
+        #obter venda de cigarros
+        cursor.execute(self.sql_statement_cigarro, [data])
+        cigarro_list = cursor.fetchall()
+        total_cigarro = cigarro_list[0][0]
+
+
+
         #obter quantidade de cupos e total de movimentos
         cursor.execute(self.sql_statement_fechamento + movimentos + self.sql_orderby_fechamento)
 
@@ -342,12 +368,20 @@ class Movimento:
             #if linha[0] == movimento[0]:
             lista[lin].extend(movimento[1:])
             lin = lin + 1
-        lista.append(['Total', cupons, locale.currency(total_movimento),
-                     locale.currency(total_movimento/cupons),
-                     locale.currency(total_acerto),'','','','',''])
+        # lista.append(['Total', cupons, locale.currency(total_movimento),
+        #              locale.currency(total_movimento/cupons),
+        #              locale.currency(total_acerto),'','','','',''])
 
-        table = {'header': self.table_header,
+        table = {
+            'cupons': cupons,
+            'total_movimento': locale.currency(total_movimento),
+            'ticket_medio': locale.currency(total_movimento/cupons),
+            'total_acerto': locale.currency(total_acerto),
+            'total_cigarro': locale.currency(total_cigarro),
+            'total_movimento_sem_cigarro': locale.currency(total_movimento - total_cigarro),
+            'header': self.table_header,
                  'list': lista}
+
         return table
 
     def __str__(self):
@@ -533,7 +567,8 @@ class Preco:
         select 
             codigo_produto,
             descricao, 
-            FORMAT( data_alteracao, 'dd/MM/yyyy HH:mm', 'pt-BR' ),
+            FORMAT( data_alteracao, 'dd/MM/yyyy HH:mm', 'pt-BR' ),   
+            FORMAT(preco_custo, 'C', 'pt-BR'),
             FORMAT(preco_venda, 'C', 'pt-BR')
         from [DTMLOCAL].[dbo].[tb_cad_produto] 
         where codigo_produto < 10000
@@ -548,7 +583,8 @@ class Preco:
     table_header_produto = [
         'Cod Produto',
         'Descrição&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-        'Data última alteração',
+        'Data Última Alteração',
+        'Preço Custo',
         'Preço Sistema',
         'Preço Cardápio',
     ]
@@ -556,7 +592,8 @@ class Preco:
     table_header_data_alteracao = [
         'Cod Produto',
         'Descrição&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-        'Data última alteração',
+        'Data Última Alteração',
+        'Preço Custo',
         'Preço Sistema',
     ]
 
@@ -587,7 +624,7 @@ class PrecoCardapio:
         module_dir = os.path.dirname(__file__)
         LOCATION = os.path.join(module_dir, getattr(settings, "GOOGLE_KEY_LOCATION", None))
         DOC_ID = getattr(settings, "CARDAPIO_DOC_ID", None)
-        CURRENT_PRICE_SHEET_NAME = getattr(settings, "CARDAPIO_CURRENT_PRICE_SHEET_NAME", None)
+        CURRENT_PRICE_SHEET_NAME = getattr(settings, "CURRENT_PRICE_SHEET_NAME", None)
 
         gc = gspread.service_account(filename = LOCATION)
         doc = gc.open_by_key(DOC_ID)
@@ -595,7 +632,7 @@ class PrecoCardapio:
 
         list = sheet.get_all_values()
         #obter timestamp da última atualização
-        ts = list[0][4]
+        ts = list[0][5]
         #eliminar primeira linha de cabeçalho
         del list[0]
 
@@ -605,19 +642,19 @@ class PrecoCardapio:
 
     def update(self, param):
         module_dir = os.path.dirname(__file__)
-        LOCATION = os.path.join(module_dir, getattr(settings, "GOOGLE_KEY_LOCATION", None))
+        KEY_LOCATION = os.path.join(module_dir, getattr(settings, "GOOGLE_KEY_LOCATION", None))
         DOC_ID = getattr(settings, "CARDAPIO_DOC_ID", None)
-        CURRENT_PRICE_SHEET_NAME = getattr(settings, "CARDAPIO_CURRENT_PRICE_SHEET_NAME", None)
+        CURRENT_PRICE_SHEET_NAME = getattr(settings, "CURRENT_PRICE_SHEET_NAME", None)
 
-        gc = gspread.service_account(filename = LOCATION)
+        gc = gspread.service_account(filename = KEY_LOCATION)
         doc = gc.open_by_key(DOC_ID)
         sheet = doc.worksheet(CURRENT_PRICE_SHEET_NAME)
-        doc.values_clear("'"+CURRENT_PRICE_SHEET_NAME+"'!A1:B2000")
+        doc.values_clear("'"+CURRENT_PRICE_SHEET_NAME+"'!A2:E2000")
         list = param['list']
         # for row in param['list']:
         #     list.append([row[0], row[2]])
-        sheet.update('A2:D' + str(len(list)+1), list)
-        sheet.update('E1', param['timestamp'])
+        sheet.update('A2:E' + str(len(list)+1), list)
+        sheet.update('F1', param['timestamp'])
 
         pass
 
