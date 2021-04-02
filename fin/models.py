@@ -289,7 +289,7 @@ class Movimento:
         group by codigo_movimento
     """
     sql_statement_cigarro = """
-        select sum(total) as valor
+        select COALESCE(sum(total), 0)  as valor
         from (
             SELECT 
                 f.total as total 
@@ -375,7 +375,7 @@ class Movimento:
         table = {
             'cupons': cupons,
             'total_movimento': locale.currency(total_movimento),
-            'ticket_medio': locale.currency(total_movimento/cupons),
+            'ticket_medio': (locale.currency(total_movimento/cupons)) if cupons > 0 else '-',
             'total_acerto': locale.currency(total_acerto),
             'total_cigarro': locale.currency(total_cigarro),
             'total_movimento_sem_cigarro': locale.currency(total_movimento - total_cigarro),
