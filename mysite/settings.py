@@ -27,10 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '192.168.0.4',
-    '192.168.0.10',
+    '192.168.1.4',
     '192.168.1.10',
-    'panicenterbtu.ddns-intelbras.com.br'
+    'panicenterbtu.ddns-intelbras.com.br',
+    'PC01',
+    '191.209.71.125'
 ]
 
 

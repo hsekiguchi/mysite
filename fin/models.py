@@ -18,9 +18,8 @@ class Sangria:
               ,FORMAT([total], 'C', 'pt-BR')
           FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
           where codigo_movimento in (select distinct codigo_movimento 
-              from [DTMLOCAL].[dbo].[tb_fechamento_venda] 
-              where data = %s
-              and hora > '03:00')
+              from [DTMLOCAL].[dbo].[tb_movimento_caixa] 
+              where data_abertura = %s )
           and codigo_tipo_movimento=4
           order by codigo_movimento, data, hora        
     """
