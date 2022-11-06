@@ -177,7 +177,7 @@ class Caderneta:
 
         # obter os movimentos de debitos e creditos do período
         cursor.execute("""
-            SELECT TOP 100
+            SELECT TOP 1000
                 convert(varchar, [data], 3)
                 ,convert(varchar, [hora], 8)
                 ,FORMAT([valor], 'C', 'pt-BR')
