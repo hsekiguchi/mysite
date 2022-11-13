@@ -24,6 +24,30 @@
         <h6 class="col-sm-3 text-dark">Total sem cigarro:</h6>
         <h6 class="col-sm-4 text-dark">{{ total_movimento_sem_cigarro }}</h6>
     </div>
-</div>
+    <br>
+    <div class="row">
+        <h6 class="col-sm-3 text-dark">Total espécie:</h6>
+        <h6 class="col-sm-4 text-dark">{{ total_especie }}</h6>
+    </div>
+    <div class="row">
+        <h6 class="col-sm-3 text-dark">Total cartão:</h6>
+        <h6 class="col-sm-4 text-dark">{{ total_cartao }}</h6>
+    </div>
+
+    <!--
+    {% if lista_especie %}
+        {% for record in lista_especie %}
+            <div class="row">
+                <h6 class="col-sm-4 text-dark">
+                {% for item in record %}
+                    {{ item }}
+                {% endfor %}
+                </h6>
+            </div>
+        {% endfor %}
+    {% endif %}
+    -->
+
+ </div>
 {% endblock trailer_block %}
 

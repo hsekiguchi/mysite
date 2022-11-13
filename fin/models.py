@@ -287,6 +287,23 @@ class Movimento:
         )
         group by codigo_movimento
     """
+
+    sql_statement_especie = """
+          SELECT 
+          e.codigo_especie,
+          sum(e.valor - e.valor_troco)     
+          FROM [DTMLOCAL].[dbo].[tb_fechamento_venda] v, 
+          [DTMLOCAL].[dbo].[tb_fechamento_especie] e
+          where v.codigo_venda = e.codigo_venda
+          and codigo_tipo_movimento = 1
+          and v.codigo_movimento in (
+        """
+    sql_orderby_especie = """
+            )
+            group by e.codigo_especie
+        """
+
+
     sql_statement_cigarro = """
         select COALESCE(sum(total), 0)  as valor
         from (
@@ -321,7 +338,7 @@ class Movimento:
 
     def load(self, data):
         cursor = connections['default'].cursor()
-        #obter lista dos códigos de movimento
+        #obter lista dos códigos de movimento a serem usados na seleção da cláusula in
         cursor.execute(self.sql_statement_caixa, [data])
         list_movimento = cursor.fetchall()
         movimentos = ''
@@ -340,7 +357,6 @@ class Movimento:
         cursor.execute(self.sql_statement_cigarro, [data])
         cigarro_list = cursor.fetchall()
         total_cigarro = cigarro_list[0][0]
-
 
 
         #obter quantidade de cupos e total de movimentos
@@ -371,6 +387,24 @@ class Movimento:
         #              locale.currency(total_movimento/cupons),
         #              locale.currency(total_acerto),'','','','',''])
 
+        #obter total por espécie
+        cursor.execute(self.sql_statement_especie + movimentos + self.sql_orderby_especie)
+
+        especie_list = cursor.fetchall()
+        lin=0
+        lista_especie=[]
+        total_especie=0
+        total_cartao=0
+        for linha in especie_list:
+            lista_especie.append(list(linha))
+            if linha[0] == 1:
+                total_especie += linha[1]
+            else:
+                total_cartao += linha[1]
+
+            lista_especie[lin][1] = locale.currency(linha[1])
+            lin = lin + 1
+
         table = {
             'cupons': cupons,
             'total_movimento': locale.currency(total_movimento),
@@ -379,7 +413,10 @@ class Movimento:
             'total_cigarro': locale.currency(total_cigarro),
             'total_movimento_sem_cigarro': locale.currency(total_movimento - total_cigarro),
             'header': self.table_header,
-                 'list': lista}
+            'list': lista,
+            'total_especie': locale.currency(total_especie),
+            'total_cartao': locale.currency(total_cartao),
+            'lista_especie': lista_especie}
 
         return table
 
