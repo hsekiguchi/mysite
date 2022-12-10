@@ -1,0 +1,35 @@
+{% extends "./list.html" %}
+
+{% load fin_extras %}
+
+{% block main_block %}
+    {% if list %}
+    <table class="table table-striped">
+        <thead>
+        {% autoescape off %}
+            <th><div class="form-check"><input class="form-check-input" type="checkbox" onclick="toggleSelection(this)"></div>&#xa0;</th>
+            <th>Cod</th>
+            <th>Descricao</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Hora</th>
+        {% endautoescape %}
+        </thead>
+        {% for record in list %}
+        <tr>
+            <td><div class="form-check">
+                <input class="form-check-input sum-item" type="checkbox" value="{{ record.2 }}" onclick="sumSelection()"></div>&#xa0;</td>
+            <td>{{ record.0 }}</td>
+            <td>{{ record.1 }}</td>
+            <td>{{ record.2|currency }}</td>
+            <td>{{ record.3 }}</td>
+            <td>{{ record.4 }}</td>
+        </tr>
+        {% endfor %}
+        {% block trailer_table %}{% endblock trailer_table %}
+    </table>
+    {% else %}
+        <p>Sem registo.</p>
+    {% endif %}
+{% endblock main_block %}
+

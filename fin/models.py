@@ -12,10 +12,10 @@ import gspread
 class Sangria:
     sql_statement = """
         SELECT [codigo_movimento]
+              ,[descricao]
+              ,[total]
               ,convert(varchar, [data], 3)
               ,convert(varchar, [hora], 8)
-              ,[descricao]
-              ,FORMAT([total], 'C', 'pt-BR')
           FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
           where codigo_movimento in (select distinct codigo_movimento 
               from [DTMLOCAL].[dbo].[tb_movimento_caixa] 
@@ -25,10 +25,10 @@ class Sangria:
     """
     table_header = [
         'Cod',
-        'Data',
-        'Hora',
         'Descricao',
-        'Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;'
+        'Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Data',
+        'Hora'
     ]
 
     def load(self, data):

@@ -12,7 +12,7 @@ from .models import Preco, PrecoCardapio
 
 @login_required
 def sangria(request):
-    context = {'titulo': 'Sangria', 'find_date': True, 'view': 'fin:sangria' }
+    context = {'titulo': 'Sangria', 'find_date': True, 'show_tot': True, 'view': 'fin:sangria' }
     #if Post, check input, keep it in session and redirect
     if request.method == "POST":
         data_ini_str = request.POST.get("data_ini","")
@@ -41,7 +41,7 @@ def sangria(request):
         data_ini_str = data_ini.strftime("%Y-%m-%d")
     context.update({'data_ini': data_ini_str,})
 
-    return render(request, 'fin/list.html', context)
+    return render(request, 'fin/sangria.html', context)
 
 
 @login_required

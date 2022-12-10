@@ -108,6 +108,29 @@
 </div>
 <script type="text/javascript" src="{% static 'fin/vendor.js' %}"></script>
 <script type="text/javascript" src="{% static 'fin/bundle.js' %}"></script>
+
+<script>
+function sumSelection() {
+  checkboxes = document.getElementsByClassName('sum-item');
+  valortotal  = document.getElementById('valor-total');
+  total = 0;
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+     if (checkboxes[i].checked) {
+       total += parseFloat(checkboxes[i].value);
+     }
+   }
+   valortotal.innerHTML = total.toFixed(2);
+}
+
+function toggleSelection(source) {
+  checkboxes = document.getElementsByClassName('sum-item');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+  sumSelection();
+}
+</script>
+
 {% block post_script %}{% endblock post_script %}
 
 </body>
