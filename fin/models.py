@@ -1,11 +1,11 @@
 import locale
 import time
 import os
+from enum import Enum
 from django.conf import settings
 from django.db import connections
+
 from django.utils.dateparse import parse_date
-
-
 from google.oauth2 import service_account
 import gspread
 
@@ -259,6 +259,9 @@ class Comanda:
     def __str__(self):
         return ' .-. '
 
+class TipoEspecie (Enum):
+    DINHEIRO = 1
+    iFOOD = 5
 
 class Movimento:
     sql_statement_caixa = """
@@ -394,11 +397,14 @@ class Movimento:
         lin=0
         lista_especie=[]
         total_especie=0
+        total_ifood=0
         total_cartao=0
         for linha in especie_list:
             lista_especie.append(list(linha))
-            if linha[0] == 1:
-                total_especie += linha[1]
+            if (linha[0] == TipoEspecie.DINHEIRO.value):
+               total_especie += linha[1]
+            elif (linha[0] == TipoEspecie.iFOOD.value):
+                total_ifood += linha[1]
             else:
                 total_cartao += linha[1]
 
@@ -416,6 +422,7 @@ class Movimento:
             'list': lista,
             'total_especie': locale.currency(total_especie),
             'total_cartao': locale.currency(total_cartao),
+            'total_ifood': locale.currency(total_ifood),
             'lista_especie': lista_especie}
 
         return table
