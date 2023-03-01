@@ -326,6 +326,19 @@ class Movimento:
             and g.descricao = 'CIGARRO'
         ) t
     """
+    sql_statement_produto_proprio = """
+        select COALESCE(sum(total), 0)  as valor
+        from (
+            SELECT 
+                f.total as total 
+            FROM DTMLOCAL.dbo.tb_cad_produto p,
+              DTMLOCAL.dbo."tb_fechamento_produto" f
+            WHERE f.codigo_produto = p.codigo_produto
+			and p.codigo_tipo_produto = 3
+            and f.data = %s
+            and f.hora > '1900-01-01 00:00'
+        ) t
+    """
     table_header = [
         'Código',
         'Cupom',
@@ -361,8 +374,12 @@ class Movimento:
         cigarro_list = cursor.fetchall()
         total_cigarro = cigarro_list[0][0]
 
+        #obter venda de produtos da casa
+        cursor.execute(self.sql_statement_produto_proprio, [data])
+        produto_proprio_list = cursor.fetchall()
+        total_produto_proprio = produto_proprio_list[0][0]
 
-        #obter quantidade de cupos e total de movimentos
+        #obter quantidade de cupons e total de movimentos
         cursor.execute(self.sql_statement_fechamento + movimentos + self.sql_orderby_fechamento)
 
         quantidade_list = cursor.fetchall()
@@ -418,6 +435,8 @@ class Movimento:
             'total_acerto': locale.currency(total_acerto),
             'total_cigarro': locale.currency(total_cigarro),
             'total_movimento_sem_cigarro': locale.currency(total_movimento - total_cigarro),
+            'total_produto_proprio': locale.currency(total_produto_proprio),
+            'total_revenda': locale.currency(total_movimento - total_produto_proprio),
             'header': self.table_header,
             'list': lista,
             'total_especie': locale.currency(total_especie),

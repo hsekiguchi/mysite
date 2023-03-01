@@ -16,13 +16,23 @@
 
 {% block trailer_block %}
 <div class="mT-10">
-    <div class="row">
-        <h6 class="col-sm-3 text-dark">Venda cigarro:</h6>
-        <h6 class="col-sm-4 text-dark">{{ total_cigarro }}</h6>
-    </div>
-    <div class="row">
-        <h6 class="col-sm-3 text-dark">Total sem cigarro:</h6>
-        <h6 class="col-sm-4 text-dark">{{ total_movimento_sem_cigarro }}</h6>
+    <div style="display:flex; flex-wrap:wrap;">
+        <div class="column">
+            <h6 class="col-sm-3 text-dark">Cigarro:</h6>
+            <h6 class="col-sm-4 text-dark">{{ total_cigarro }}</h6>
+        </div>
+        <div class="column">
+            <h6 class="col-sm-3 text-dark">Líquido:</h6>
+            <h6 class="col-sm-4 text-dark">{{ total_movimento_sem_cigarro }}</h6>
+        </div>
+        <div class="column">
+            <h6 class="col-sm-3 text-dark">Revenda:</h6>
+            <h6 class="col-sm-4 text-dark">{{ total_revenda }}</h6>
+        </div>
+        <div class="column">
+            <h6 class="col-sm-3 text-dark">Próprio:</h6>
+            <h6 class="col-sm-4 text-dark">{{ total_produto_proprio }}</h6>
+        </div>
     </div>
     <br>
     <div class="row">
