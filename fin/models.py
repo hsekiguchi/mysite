@@ -264,16 +264,22 @@ class TipoEspecie (Enum):
     iFOOD = 5
 
 class Movimento:
-    sql_statement_livro_caixa = """
-        SELECT [codigo_movimento]
-              ,[codigo_caixa]
-              ,[codigo_usuario]
-              ,(convert(varchar, [data_abertura], 3)) as data
-              ,(convert(varchar, [hora_abertura], 8)) as inicio
-              ,(convert(varchar, [hora_fechamento], 8)) as fim
-          FROM [DTMLOCAL].[dbo].[tb_movimento_caixa]
-          where data_abertura=%s
-          order by codigo_movimento
+    sql_statement_caixa = """
+        select 
+            cr.caixa,
+            count(*) as cupom,
+            cast(sum(crf.valor) as decimal(12,2)) as movimento,
+            cast(sum(crf.valor)/count(*) as decimal(12,2)) as media,	
+            cr.id as usuario,
+            cr.data as data,
+            min(hora) as hora_inicio,
+            max(cr.hora) as hora_fim
+        from ajxfood.caixa_recebimento cr,
+             ajxfood.caixa_recebimento_formas crf 
+        where cr.codigo_online  = crf.codigo_recebimento 
+        and crf.tipo not in ('FIADO','CORTESIA')
+        and cr.data = %s    
+        group by cr.caixa
     """
     sql_statement_fechamento = """
         SELECT [codigo_movimento]
@@ -343,9 +349,7 @@ class Movimento:
         'Código',
         'Cupom',
         'Movimento',
-        'Média&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-        'Acerto&#xa0;&#xa0;&#xa0;&#xa0;',
-        'Caixa',
+        'Tkt Médio',
         'Usuário',
         'Data',
         "Início",
@@ -357,92 +361,84 @@ class Movimento:
         #obter lista dos códigos de movimento a serem usados na seleção da cláusula in
         cursor.execute(self.sql_statement_caixa, [data])
         list_movimento = cursor.fetchall()
-        movimentos = ''
-        first_time = True
-        for movimento in list_movimento:
-            if first_time:
-                movimentos = str(movimento[0])
-                first_time = False
-            else:
-                movimentos= movimentos + ', ' + str(movimento[0])
 
-        if first_time:
-            return {}
-
-        #obter venda de cigarros
-        cursor.execute(self.sql_statement_cigarro, [data])
-        cigarro_list = cursor.fetchall()
-        total_cigarro = cigarro_list[0][0]
-
-        #obter venda de produtos da casa
-        cursor.execute(self.sql_statement_produto_proprio, [data])
-        produto_proprio_list = cursor.fetchall()
-        total_produto_proprio = produto_proprio_list[0][0]
-
-        #obter quantidade de cupons e total de movimentos
-        cursor.execute(self.sql_statement_fechamento + movimentos + self.sql_orderby_fechamento)
-
-        quantidade_list = cursor.fetchall()
-
+        # #obter venda de cigarros
+        # cursor.execute(self.sql_statement_cigarro, [data])
+        # cigarro_list = cursor.fetchall()
+        # total_cigarro = cigarro_list[0][0]
+        #
+        # #obter venda de produtos da casa
+        # cursor.execute(self.sql_statement_produto_proprio, [data])
+        # produto_proprio_list = cursor.fetchall()
+        # total_produto_proprio = produto_proprio_list[0][0]
+        #
+        # #obter quantidade de cupons e total de movimentos
+        # cursor.execute(self.sql_statement_fechamento + movimentos + self.sql_orderby_fechamento)
+        #
+        # quantidade_list = cursor.fetchall()
+        #
         #merge das listas
         locale.setlocale(locale.LC_ALL, '')
         lin=0
         lista=[]
         cupons=0
         total_movimento=0
-        total_acerto=0
-        for linha in quantidade_list:
+        # total_acerto=0
+        for linha in list_movimento:
             cupons += linha[1]
             total_movimento += linha[2]
-            total_acerto += linha[4]
+        #     total_acerto += linha[4]
             lista.append(list(linha))
             lista[lin][2] = locale.currency(linha[2])
             lista[lin][3] = locale.currency(linha[3])
-            lista[lin][4] = locale.currency(linha[4])
-            movimento = list_movimento[lin]
-            #if linha[0] == movimento[0]:
-            lista[lin].extend(movimento[1:])
+        #     lista[lin][4] = locale.currency(linha[4])
+        #     movimento = list_movimento[lin]
+        #     #if linha[0] == movimento[0]:
+        #     lista[lin].extend(movimento[1:])
             lin = lin + 1
-        # lista.append(['Total', cupons, locale.currency(total_movimento),
-        #              locale.currency(total_movimento/cupons),
-        #              locale.currency(total_acerto),'','','','',''])
 
-        #obter total por espécie
-        cursor.execute(self.sql_statement_especie + movimentos + self.sql_orderby_especie)
+        lista.append(['Total', cupons, locale.currency(total_movimento),
+                      locale.currency(total_movimento/cupons),
+                      '','','',''])
 
-        especie_list = cursor.fetchall()
-        lin=0
-        lista_especie=[]
-        total_especie=0
-        total_ifood=0
-        total_cartao=0
-        for linha in especie_list:
-            lista_especie.append(list(linha))
-            if (linha[0] == TipoEspecie.DINHEIRO.value):
-               total_especie += linha[1]
-            elif (linha[0] == TipoEspecie.iFOOD.value):
-                total_ifood += linha[1]
-            else:
-                total_cartao += linha[1]
-
-            lista_especie[lin][1] = locale.currency(linha[1])
-            lin = lin + 1
+        #
+        # #obter total por espécie
+        # cursor.execute(self.sql_statement_especie + movimentos + self.sql_orderby_especie)
+        #
+        # especie_list = cursor.fetchall()
+        # lin=0
+        # lista_especie=[]
+        # total_especie=0
+        # total_ifood=0
+        # total_cartao=0
+        # for linha in especie_list:
+        #     lista_especie.append(list(linha))
+        #     if (linha[0] == TipoEspecie.DINHEIRO.value):
+        #        total_especie += linha[1]
+        #     elif (linha[0] == TipoEspecie.iFOOD.value):
+        #         total_ifood += linha[1]
+        #     else:
+        #         total_cartao += linha[1]
+        #
+        #     lista_especie[lin][1] = locale.currency(linha[1])
+        #     lin = lin + 1
 
         table = {
-            'cupons': cupons,
-            'total_movimento': locale.currency(total_movimento),
-            'ticket_medio': (locale.currency(total_movimento/cupons)) if cupons > 0 else '-',
-            'total_acerto': locale.currency(total_acerto),
-            'total_cigarro': locale.currency(total_cigarro),
-            'total_movimento_sem_cigarro': locale.currency(total_movimento - total_cigarro),
-            'total_produto_proprio': locale.currency(total_produto_proprio),
-            'total_revenda': locale.currency(total_movimento - total_produto_proprio),
+            # 'cupons': cupons,
+            # 'total_movimento': locale.currency(total_movimento),
+            # 'ticket_medio': (locale.currency(total_movimento/cupons)) if cupons > 0 else '-',
+            # 'total_acerto': locale.currency(total_acerto),
+            # 'total_cigarro': locale.currency(total_cigarro),
+            # 'total_movimento_sem_cigarro': locale.currency(total_movimento - total_cigarro),
+            # 'total_produto_proprio': locale.currency(total_produto_proprio),
+            # 'total_revenda': locale.currency(total_movimento - total_produto_proprio),
             'header': self.table_header,
             'list': lista,
-            'total_especie': locale.currency(total_especie),
-            'total_cartao': locale.currency(total_cartao),
-            'total_ifood': locale.currency(total_ifood),
-            'lista_especie': lista_especie}
+            # 'total_especie': locale.currency(total_especie),
+            # 'total_cartao': locale.currency(total_cartao),
+            # 'total_ifood': locale.currency(total_ifood),
+            # 'lista_especie': lista_especie,
+        }
 
         return table
 
