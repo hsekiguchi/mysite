@@ -84,11 +84,17 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'sql_server.pyodbc',
-        'NAME': 'MYAPP',
-        'HOST': 'SRV01\\SQLEXPRESS',
-        'USER': 'panicenter',
-        'PASSWORD': '6082Pani',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, "db.sqlite3"),
+    },
+
+    'appdata': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ajxfood',
+        'HOST': '192.168.1.10',
+        'PORT': '40115',
+        'USER': 'leitura',
+        'PASSWORD': '123456',
     }
 }
 # DATABASES = {

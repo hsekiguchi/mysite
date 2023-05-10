@@ -264,7 +264,7 @@ class TipoEspecie (Enum):
     iFOOD = 5
 
 class Movimento:
-    sql_statement_caixa = """
+    sql_statement_livro_caixa = """
         SELECT [codigo_movimento]
               ,[codigo_caixa]
               ,[codigo_usuario]
@@ -353,7 +353,7 @@ class Movimento:
     ]
 
     def load(self, data):
-        cursor = connections['default'].cursor()
+        cursor = connections['appdata'].cursor()
         #obter lista dos códigos de movimento a serem usados na seleção da cláusula in
         cursor.execute(self.sql_statement_caixa, [data])
         list_movimento = cursor.fetchall()
@@ -724,3 +724,91 @@ class PrecoCardapio:
         return ' .-. '
 
 
+# movimento
+#     sql_statement_caixa = """
+#         SELECT [codigo_movimento]
+#               ,[codigo_caixa]
+#               ,[codigo_usuario]
+#               ,(convert(varchar, [data_abertura], 3)) as data
+#               ,(convert(varchar, [hora_abertura], 8)) as inicio
+#               ,(convert(varchar, [hora_fechamento], 8)) as fim
+#           FROM [DTMLOCAL].[dbo].[tb_movimento_caixa]
+#           where data_abertura=%s
+#           order by codigo_movimento
+#     """
+#     sql_statement_fechamento = """
+#         SELECT [codigo_movimento]
+#               ,count(*) as cupons
+#               ,sum(total) as movimento
+#               ,sum(total)/count(*) as media
+#               ,sum(iif(codigo_caixa = 999,total,0)) as acerto
+#           FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
+#           where codigo_tipo_movimento = 1
+#               and codigo_cliente not in (55)
+#               and codigo_movimento in (
+#     """
+#     sql_orderby_fechamento = """
+#         )
+#         group by codigo_movimento
+#     """
+#
+#     sql_statement_especie = """
+#           SELECT
+#           e.codigo_especie,
+#           sum(e.valor - e.valor_troco)
+#           FROM [DTMLOCAL].[dbo].[tb_fechamento_venda] v,
+#           [DTMLOCAL].[dbo].[tb_fechamento_especie] e
+#           where v.codigo_venda = e.codigo_venda
+#           and codigo_tipo_movimento = 1
+#           and v.codigo_movimento in (
+#         """
+#     sql_orderby_especie = """
+#             )
+#             group by e.codigo_especie
+#         """
+#
+#
+#     sql_statement_cigarro = """
+#         select COALESCE(sum(total), 0)  as valor
+#         from (
+#             SELECT
+#                 f.total as total
+#             FROM DTMLOCAL.dbo.tb_cad_produto p,
+#               [DTMLOCAL].[dbo].[tb_cad_subgrupo] s,
+#               [DTMLOCAL].[dbo].[tb_cad_grupo] g,
+#               DTMLOCAL.dbo."tb_fechamento_produto" f
+#               LEFT JOIN DTMLOCAL.dbo.tb_caderneta_consumo c
+#               ON f.codigo_venda = c.codigo_venda
+#             WHERE f.codigo_produto = p.codigo_produto
+#             and s.codigo_subgrupo = p.codigo_subgrupo
+#             and s.codigo_grupo = g.codigo_grupo
+#             and f.data = %s
+#             and f.hora > '1900-01-01 00:00'
+#             and g.descricao = 'CIGARRO'
+#         ) t
+#     """
+#     sql_statement_produto_proprio = """
+#         select COALESCE(sum(total), 0)  as valor
+#         from (
+#             SELECT
+#                 f.total as total
+#             FROM DTMLOCAL.dbo.tb_cad_produto p,
+#               DTMLOCAL.dbo."tb_fechamento_produto" f
+#             WHERE f.codigo_produto = p.codigo_produto
+# 			and p.codigo_tipo_produto = 3
+#             and f.data = %s
+#             and f.hora > '1900-01-01 00:00'
+#         ) t
+#     """
+#     table_header = [
+#         'Código',
+#         'Cupom',
+#         'Movimento',
+#         'Média&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+#         'Acerto&#xa0;&#xa0;&#xa0;&#xa0;',
+#         'Caixa',
+#         'Usuário',
+#         'Data',
+#         "Início",
+#         'Fim',
+#     ]
