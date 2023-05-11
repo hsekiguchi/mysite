@@ -297,19 +297,18 @@ class Movimento:
         group by codigo_movimento
     """
 
-    sql_statement_especie = """
-          SELECT 
-          e.codigo_especie,
-          sum(e.valor - e.valor_troco)     
-          FROM [DTMLOCAL].[dbo].[tb_fechamento_venda] v, 
-          [DTMLOCAL].[dbo].[tb_fechamento_especie] e
-          where v.codigo_venda = e.codigo_venda
-          and codigo_tipo_movimento = 1
-          and v.codigo_movimento in (
+    sql_statement_tipo = """
+        select 
+            crf.tipo,
+	        cast(sum(crf.valor) as decimal(12,2)) as movimento
+        from ajxfood.caixa_recebimento cr,
+             ajxfood.caixa_recebimento_formas crf 
+        where cr.codigo_online  = crf.codigo_recebimento 
+            and cr.caixa in (
         """
-    sql_orderby_especie = """
+    sql_orderby_tipo = """
             )
-            group by e.codigo_especie
+            group by crf.tipo
         """
 
 
@@ -377,51 +376,42 @@ class Movimento:
         #
         # quantidade_list = cursor.fetchall()
         #
-        #merge das listas
+        #obter caixas do dia e respectivos movimentos
         locale.setlocale(locale.LC_ALL, '')
         lin=0
         lista=[]
+        lista_caixas = ''
         cupons=0
         total_movimento=0
         # total_acerto=0
         for linha in list_movimento:
+            # criar lista de caixas para a cláusula in
+            lista_caixas = lista_caixas + str(linha[0]) + ','
+            # acumular quantidade de cupons e do movimento
             cupons += linha[1]
             total_movimento += linha[2]
-        #     total_acerto += linha[4]
+            #adicionar a linha para exibição, formatando valores monetários
             lista.append(list(linha))
             lista[lin][2] = locale.currency(linha[2])
             lista[lin][3] = locale.currency(linha[3])
-        #     lista[lin][4] = locale.currency(linha[4])
-        #     movimento = list_movimento[lin]
-        #     #if linha[0] == movimento[0]:
-        #     lista[lin].extend(movimento[1:])
             lin = lin + 1
 
         lista.append(['Total', cupons, locale.currency(total_movimento),
                       locale.currency(total_movimento/cupons),
                       '','','',''])
 
-        #
-        # #obter total por espécie
-        # cursor.execute(self.sql_statement_especie + movimentos + self.sql_orderby_especie)
-        #
-        # especie_list = cursor.fetchall()
-        # lin=0
-        # lista_especie=[]
-        # total_especie=0
-        # total_ifood=0
-        # total_cartao=0
-        # for linha in especie_list:
-        #     lista_especie.append(list(linha))
-        #     if (linha[0] == TipoEspecie.DINHEIRO.value):
-        #        total_especie += linha[1]
-        #     elif (linha[0] == TipoEspecie.iFOOD.value):
-        #         total_ifood += linha[1]
-        #     else:
-        #         total_cartao += linha[1]
-        #
-        #     lista_especie[lin][1] = locale.currency(linha[1])
-        #     lin = lin + 1
+        #obter total por tipo de pagamento
+        caixas = lista_caixas[0:len(lista_caixas)-1]
+        cursor.execute(self.sql_statement_tipo + lista_caixas[0:len(lista_caixas)-1]
+                       + self.sql_orderby_tipo)
+        list_especie = cursor.fetchall()
+
+        lista_especie=[]
+        lin=0
+        for linha in list_especie:
+            lista_especie.append(list(linha))
+            lista_especie[lin][1] = locale.currency(linha[1])
+            lin+=1
 
         table = {
             # 'cupons': cupons,
@@ -437,7 +427,7 @@ class Movimento:
             # 'total_especie': locale.currency(total_especie),
             # 'total_cartao': locale.currency(total_cartao),
             # 'total_ifood': locale.currency(total_ifood),
-            # 'lista_especie': lista_especie,
+            'lista_especie': lista_especie,
         }
 
         return table

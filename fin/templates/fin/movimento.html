@@ -35,18 +35,19 @@
         </div>
     </div>
     <br>
-    <div class="row">
-        <h6 class="col-sm-3 text-dark">Total espécie:</h6>
-        <h6 class="col-sm-4 text-dark">{{ total_especie }}</h6>
-    </div>
-    <div class="row">
-        <h6 class="col-sm-3 text-dark">Total iFood:</h6>
-        <h6 class="col-sm-4 text-dark">{{ total_ifood }}</h6>
-    </div>
-    <div class="row">
-        <h6 class="col-sm-3 text-dark">Total cartão:</h6>
-        <h6 class="col-sm-4 text-dark">{{ total_cartao }}</h6>
-    </div>
+    {% for record in lista_especie %}
+        <div class="row">
+            {% for item in record %}
+                {% autoescape off %}
+                {% cycle '<h6 class="col-sm-3 text-dark">Total' ' ' %}
+                {{ item }}{% cycle ':' '</h6>' %}
+                {% endautoescape %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+
+
  </div>
 {% endblock trailer_block %}
 
