@@ -353,7 +353,7 @@ class Movimento:
         'Movimento',
         'Tkt&nbsp;Médio',
         'Usuário&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
-        'Data&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Data&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         "Início",
         'Fim',
     ]
