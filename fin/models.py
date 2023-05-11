@@ -11,17 +11,20 @@ import gspread
 
 class Sangria:
     sql_statement = """
-        SELECT [codigo_movimento]
-              ,[descricao]
-              ,[total]
-              ,convert(varchar, [data], 3)
-              ,convert(varchar, [hora], 8)
-          FROM [DTMLOCAL].[dbo].[tb_fechamento_venda]
-          where codigo_movimento in (select distinct codigo_movimento 
-              from [DTMLOCAL].[dbo].[tb_movimento_caixa] 
-              where data_abertura = %s )
-          and codigo_tipo_movimento=4
-          order by codigo_movimento, data, hora        
+               select 
+	        fr.caixa ,        
+	        fr.motivo ,
+	        fr.valor ,
+	        fr.data,
+	        fr.hora 
+        from ajxfood.financeiro_retiradas fr 
+        where fr.caixa in (
+        select distinct
+            cr.caixa
+        from ajxfood.caixa_recebimento cr
+        where cr.data = %s 
+        order by cr.caixa
+        )      
     """
     table_header = [
         'Cod',
@@ -32,7 +35,7 @@ class Sangria:
     ]
 
     def load(self, data):
-        cursor = connections['default'].cursor()
+        cursor = connections['appdata'].cursor()
         cursor.execute(self.sql_statement, [data])
         #  adicionado '&#xa0;' para a coluna ficar com espaço suficente para
         #  evitar valores monetários ficarem com o R$ e valor em linhas distintas
@@ -348,7 +351,7 @@ class Movimento:
         'Código',
         'Cupom',
         'Movimento',
-        'Tkt Médio',
+        'Tkt&nbspMédio',
         'Usuário',
         'Data',
         "Início",
