@@ -352,8 +352,8 @@ class Movimento:
         'Cupom',
         'Movimento',
         'Tkt&nbsp;Médio',
-        'Usuário&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-        'Data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+        'Usuário&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Data&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         "Início",
         'Fim',
     ]
