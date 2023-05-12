@@ -399,6 +399,9 @@ class Movimento:
             lista[lin][3] = locale.currency(linha[3])
             lin = lin + 1
 
+        if cupons == 0:
+            return lista
+
         lista.append(['Total', cupons, locale.currency(total_movimento),
                       locale.currency(total_movimento/cupons),
                       '','','',''])
