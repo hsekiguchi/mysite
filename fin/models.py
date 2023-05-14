@@ -48,44 +48,46 @@ class Sangria:
 
 class Produto:
     sql_statement ="""
-        SELECT TOP 100 [codigo_produto]
-            ,p.[descricao]
-            ,FORMAT(p.[preco_venda], 'C', 'pt-BR')
-            ,p.[preco_custo]
-            ,iif(p.preco_custo = 0, 0, cast((p.preco_venda/p.preco_custo - 1) as decimal(18,2)))
-            ,convert(varchar, p.[data_alteracao], 3)
-            ,p.[validade_dias]
-            ,g.[descricao]
-            ,p.[codigo_grupo]
-            ,s.[descricao]
-            ,p.[codigo_subgrupo]
-            ,p.[ncm]
-            ,p.[ativo]
-        FROM [DTMLOCAL].[dbo].[tb_cad_produto] p
-        JOIN [DTMLOCAL].[dbo].[tb_cad_grupo] g
-          ON p.codigo_grupo = g.codigo_grupo
-        JOIN [DTMLOCAL].[dbo].[tb_cad_subgrupo] s
-          ON p.codigo_subgrupo = s.codigo_subgrupo
-        WHERE (p.codigo_produto = %s
-        OR p.descricao like %s)
+        select 
+            p.cod_produto ,
+            p.ean ,
+            p.nome as descricao_produto,
+            p.preco_venda ,
+            p.preco_custo ,
+            round (p.preco_venda / p.preco_custo - 1, 2) as margem,
+            greatest(p.estoque_atual, 0) as estoque,
+            p.`data` as data_alteracao_produto, 
+            COALESCE(p.balanca_validade, 0) as validade_produto,
+            pt.nome as tipo_produto,
+            p.departamento ,
+            g.grupo ,
+            p.ncm 
+        from ajxfood.produtos p 
+        join ajxfood.produtos_tipo pt 
+            on p.codigo_tipo  = pt.codigo
+        join ajxfood.grupos g 
+            on p.codigo_grupo = g.codigo
+        where (p.cod_produto = %s
+            or p.ean = %s
+            or p.nome like %s)
     """
     sql_orderby = """
-        ORDER BY p.[descricao]
+        order by p.nome
     """
     table_header = [
         'Cod Produto',
+        'Cod EAN',
         'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         'Preco&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         'Custo',
         'Margem',
+        'Estoque',
         'Alteração',
         'Validade',
+        'Tipo',
+        'Departamento',
         'Grupo',
-        'Cod',
-        'SubGrupo',
-        'Cod',
         'NCM',
-        'Ativo',
     ]
 
     def load(self, param):
@@ -95,12 +97,14 @@ class Produto:
         ]
         table = {'checkbox_list': checkbox_list,}
         if param['texto_pesquisa'] != "":
-            cursor = connections['default'].cursor()
+            cursor = connections['appdata'].cursor()
             statement = self.sql_statement
             if not param['inclui_inativo']:
-                statement += " AND p.[ativo] = 'S' "
+                statement += " AND p.removido = '' "
             statement += self.sql_orderby
-            cursor.execute(statement, [param['codigo_produto'], '%' + param['texto_pesquisa'] + '%'])
+            cursor.execute(statement, [param['codigo_produto'],
+                                       "'" + param['texto_pesquisa'] + "'",
+                                       '%' + param['texto_pesquisa'] + '%'])
             lista_produto = cursor.fetchall()
             table.update({'header': self.table_header,
                            'list': lista_produto,})
