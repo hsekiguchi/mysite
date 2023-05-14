@@ -63,9 +63,9 @@ class Produto:
             g.grupo ,
             p.ncm 
         from ajxfood.produtos p 
-        join ajxfood.produtos_tipo pt 
+        left join ajxfood.produtos_tipo pt 
             on p.codigo_tipo  = pt.codigo
-        join ajxfood.grupos g 
+        left join ajxfood.grupos g 
             on p.codigo_grupo = g.codigo
         where (p.cod_produto = %s
             or p.ean = %s
