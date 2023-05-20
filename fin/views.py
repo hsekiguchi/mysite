@@ -168,9 +168,10 @@ def movimento(request):
 
         mv = Movimento()
         list = mv.load(data_ini_str)
-        if not request.user.groups.filter(name = 'manager').exists():
-            list['lista_especie'] = []
-        context.update(list)
+        if list['caixas'] != '0':
+            if not request.user.groups.filter(name = 'manager').exists():
+                list['lista_especie'] = []
+            context.update(list)
     else:
         data_ini = datetime.now()
         data_ini_str = data_ini.strftime("%Y-%m-%d")

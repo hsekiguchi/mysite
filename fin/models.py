@@ -403,16 +403,16 @@ class Movimento:
             lista[lin][3] = locale.currency(linha[3])
             lin = lin + 1
 
-        if cupons == 0:
-            return lista
+        ticket_medio = 0 if cupons == 0 else total_movimento/cupons
 
         lista.append(['Total', cupons, locale.currency(total_movimento),
-                      locale.currency(total_movimento/cupons),
+                      locale.currency(ticket_medio),
                       '','','',''])
 
         #obter total por tipo de pagamento
-        caixas = lista_caixas[0:len(lista_caixas)-1]
-        cursor.execute(self.sql_statement_tipo + lista_caixas[0:len(lista_caixas)-1]
+        tamanho = len(lista_caixas)
+        caixas = lista_caixas[0:tamanho-1] if tamanho != 0 else '0'
+        cursor.execute(self.sql_statement_tipo + caixas
                        + self.sql_orderby_tipo)
         list_especie = cursor.fetchall()
 
@@ -424,6 +424,7 @@ class Movimento:
             lin+=1
 
         table = {
+            'caixas': caixas,
             # 'cupons': cupons,
             # 'total_movimento': locale.currency(total_movimento),
             # 'ticket_medio': (locale.currency(total_movimento/cupons)) if cupons > 0 else '-',
