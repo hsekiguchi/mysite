@@ -33,9 +33,11 @@ def sangria(request):
     if len(prg_last_data) > 1 and prg_last_data.get('view', '') == context['view']:
         data_ini_str = prg_last_data['data_ini']
         del request.session['prg_last_data']
-        sg = Sangria()
-        sangria_list = sg.load(data_ini_str)
-        context.update(sangria_list)
+
+        if request.user.has_perm('fin.view_sangria'):
+            sg = Sangria()
+            sangria_list = sg.load(data_ini_str)
+            context.update(sangria_list)
     else:
         data_ini = datetime.now()
         data_ini_str = data_ini.strftime("%Y-%m-%d")
@@ -169,7 +171,7 @@ def movimento(request):
         mv = Movimento()
         list = mv.load(data_ini_str)
         if list['caixas'] != '0':
-            if not request.user.groups.filter(name = 'manager').exists():
+            if not request.user.has_perm('fin.view_movimento_especie'):
                 list['lista_especie'] = []
             context.update(list)
     else:

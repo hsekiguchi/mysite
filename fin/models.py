@@ -4,12 +4,20 @@ import os
 from enum import Enum
 from django.conf import settings
 from django.db import connections
+from django.db import models
 
 from django.utils.dateparse import parse_date
 from google.oauth2 import service_account
 import gspread
 
-class Sangria:
+class Sangria(models.Model):
+    class Meta:
+        managed = False
+        default_permissions = ()
+        permissions = [
+            ("view_sangria", "Permite consultar sangrias"),
+        ]
+
     sql_statement = """
                select 
 	        fr.caixa ,        
@@ -270,7 +278,14 @@ class TipoEspecie (Enum):
     DINHEIRO = 1
     iFOOD = 5
 
-class Movimento:
+class Movimento(models.Model):
+    class Meta:
+        managed = False
+        default_permissions = ()
+        permissions = [
+            ("view_movimento_especie", "Permite consultar movimento por espécie"),
+        ]
+
     sql_statement_caixa = """
         select 
             cr.caixa,
