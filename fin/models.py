@@ -291,15 +291,27 @@ class Movimento(models.Model):
             cr.caixa,
             count(*) as cupom,
             cast(sum(crf.valor) as decimal(12,2)) as movimento,
-            cast(sum(crf.valor)/count(*) as decimal(12,2)) as media,	
-            cr.id as usuario,
+            cast(sum(crf.valor)/count(*) as decimal(12,2)) as media,          
+			cast(ca.valor as decimal(10,2)) as fundo_inicial,
+            cast(clcd.1c as decimal)*0.01+cast(clcd.5c as decimal)*0.05+
+	        	cast(clcd.10c as decimal)*0.1 +cast(clcd.25c as decimal)*0.25+
+	        	cast(clcd.50c as decimal)*0.5+cast(clcd.1r as decimal)+
+	        	cast(clcd.2r as decimal)*2+cast(clcd.5r as decimal)*5+
+	        	cast(clcd.10r as decimal)*10+cast(clcd.20r as decimal)*20+
+	        	cast(clcd.50r as decimal)*50+cast(clcd.100r as decimal)*100+
+	        	cast(clcd.200r as decimal)*200 as fundo_final,
+            cr.id as usuario,            
             cr.data as data,
-            min(hora) as hora_inicio,
+            min(cr.hora) as hora_inicio,
             max(cr.hora) as hora_fim
-        from ajxfood.caixa_recebimento cr,
-             ajxfood.caixa_recebimento_formas crf 
-        where cr.codigo_online  = crf.codigo_recebimento 
-        and crf.tipo not in ('FIADO','CORTESIA')
+        from ajxfood.caixa_recebimento cr
+        left join ajxfood.caixa_recebimento_formas crf
+        	on cr.codigo_online  = crf.codigo_recebimento
+        left join ajxfood.caixa_abertura ca 
+        	on cr.caixa = ca.caixa 
+        left join ajxfood.caixa_livro_caixa_dinheiro clcd 
+    		on cr.caixa = clcd.caixa
+        where crf.tipo not in ('FIADO','CORTESIA')
         and cr.data = %s    
         group by cr.caixa
     """
@@ -371,6 +383,8 @@ class Movimento(models.Model):
         'Cupom',
         'Movimento',
         'Tkt&nbsp;Médio',
+        'Fundo&nbsp;Ini',
+        'Fundo&nbsp;Fin',
         'Usuário&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         'Data&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         "Início",
