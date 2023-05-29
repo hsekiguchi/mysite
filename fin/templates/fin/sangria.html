@@ -6,7 +6,7 @@
     {% if list %}
     <table class="table table-striped">
         <thead>
-            <th><div class="form-check"><input class="form-check-input" type="checkbox" onclick="toggleSelection(this)"></div>&#xa0;</th>
+            <th><div class="form-check"><input class="form-check-input" id ="all-item" type="checkbox" onclick="toggleSelection(this)"></div>&#xa0;</th>
             {% autoescape off %}
             {% for column in header %}
                 <th>{{ column }}</th>

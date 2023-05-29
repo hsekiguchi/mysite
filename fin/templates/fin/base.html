@@ -129,6 +129,18 @@ function toggleSelection(source) {
   }
   sumSelection();
 }
+
+window.onload = onPageLoad();
+
+function onPageLoad() {
+  checkbox = document.getElementById('all-item');
+  checkbox.checked = true;
+  checkboxes = document.getElementsByClassName('sum-item');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = true;
+  }
+  sumSelection();
+}
 </script>
 
 {% block post_script %}{% endblock post_script %}

@@ -302,7 +302,7 @@ class Movimento(models.Model):
 	        	cast(clcd.200r as decimal)*200 as fundo_final,
             cr.id as usuario,            
             cr.data as data,
-            min(cr.hora) as hora_inicio,
+            min(ca.hora) as hora_inicio,
             max(cr.hora) as hora_fim
         from ajxfood.caixa_recebimento cr
         left join ajxfood.caixa_recebimento_formas crf
