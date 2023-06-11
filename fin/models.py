@@ -67,7 +67,7 @@ class Produto:
             p.`data` as data_alteracao_produto, 
             COALESCE(p.balanca_validade, 0) as validade_produto,
             pt.nome as tipo_produto,
-            p.departamento ,
+            d.departamento,
             g.grupo ,
             p.ncm 
         from ajxfood.produtos p 
@@ -75,6 +75,8 @@ class Produto:
             on p.codigo_tipo  = pt.codigo
         left join ajxfood.grupos g 
             on p.codigo_grupo = g.codigo
+        left join ajxfood.produtos_departamentos d
+        	on p.codigo_departamento = d.codigo
         where (p.cod_produto = %s
             or p.ean = %s
             or p.nome like %s)
