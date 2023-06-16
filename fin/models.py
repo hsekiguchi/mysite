@@ -23,6 +23,7 @@ class Sangria(models.Model):
 	        fr.caixa ,        
 	        fr.motivo ,
 	        fr.valor ,
+	        IF(fr.removido <> '', 'S', 'N') as estorno ,
 	        fr.data,
 	        fr.hora 
         from ajxfood.financeiro_retiradas fr 
@@ -38,6 +39,7 @@ class Sangria(models.Model):
         'Cod',
         'Descricao',
         'Valor&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Estorno',
         'Data&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
         'Hora'
     ]
@@ -477,42 +479,67 @@ class Movimento(models.Model):
     def __str__(self):
         return '(◕‿◕)'
 
-class Fornecedor:
+
+class CadernetaCliente:
     sql_statement = """
-        SELECT TOP 1000 f.[Codigo_CFD]
-              ,f.[Nome_Fantasia]
-              ,f.[Descricao]
-              ,f.[CGC_CPF]
-              ,ge1.grupo as ID_Grupo
-              ,ge2.descricao as Grupo
-              ,f.[Grupo] as ID_Sub_Grupo
-              ,sg.[DESCRICAO] as Sub_Grupo
-              ,f.[inativo]
-          FROM [DTMLOCAL].[dbo].[tb_fin_for_desp_cli] f,
-          [DTMLOCAL].[dbo].tb_fin_grupos_fdc sg,
-          [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge1,
-          [DTMLOCAL].[dbo].[tb_fin_grupos_estrutura] ge2
-          where f.Grupo = sg.GRUPO
-          and f.Grupo = ge1.id
-          and ge1.grupo = ge2.grupo
-          and ge2.id = 0
-          and (f.Codigo_CFD =%s
-            or (f.nome_fantasia like %s or f.Descricao like %s))
-          order by f.Descricao
+        select 
+            c.codigo ,
+            c.nome_razao,
+            c.nome_fantasia,
+            c.tel_1,
+            c.tel_2,
+            c.limite_credito,
+            c.cpf_cnpj 
+        from ajxfood.clientes c
+        where (c.codigo=%s
+            or (c.nome_razao like %s or c.nome_fantasia like %s))
     """
     table_header = [
         'Código',
         'Nome',
-        'Descricao&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;',
+        'Nome&nbsp;Fantasia',
+        'Tel&nbsp;1',
+        'Tel&nbsp;2',
+        'Limite',
         'CNPJ/CPF',
-        'Grupo',
-        'Descricao',
-        'SubGrupo',
-        'Descricao',
-        'Ativo'
     ]
     def load(self, param):
-        cursor = connections['default'].cursor()
+        cursor = connections['appdata'].cursor()
+        cursor.execute(self.sql_statement, [param['codigo_cliente'], '%' + param['codigo_cliente_str'] + '%'
+                       , '%' + param['codigo_cliente_str'] + '%'])
+        table = {'header': self.table_header,
+                 'list': cursor.fetchall()}
+        return table
+
+    def __str__(self):
+        return ' .-. '
+
+
+class Fornecedor:
+    sql_statement = """
+        select 
+            c.codigo ,
+            c.nome_razao,
+            c.nome_fantasia,
+            c.tel_1,
+            c.tel_2,
+            c.limite_credito,
+            c.cpf_cnpj 
+        from ajxfood.clientes c
+        where (c.codigo=%s
+            or (c.nome_razao like %s or c.nome_fantasia like %s))
+    """
+    table_header = [
+        'Código',
+        'Nome',
+        'Nome&nbsp;Fantasia',
+        'Tel&nbsp;1',
+        'Tel&nbsp;2',
+        'Limite',
+        'CNPJ/CPF',
+    ]
+    def load(self, param):
+        cursor = connections['appdata'].cursor()
         cursor.execute(self.sql_statement, [param['codigo_cfd'], '%' + param['texto_pesquisa'] + '%'
                        , '%' + param['texto_pesquisa'] + '%'])
         table = {'header': self.table_header,
