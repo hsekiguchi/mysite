@@ -341,7 +341,7 @@ class Movimento(models.Model):
 	        cast(sum(crf.valor) as decimal(12,2)) as movimento
         from ajxfood.caixa_recebimento cr,
              ajxfood.caixa_recebimento_formas crf 
-        where cr.codigo_online  = crf.codigo_recebimento 
+        where cr.codigo  = crf.codigo_recebimento 
             and cr.caixa in (
         """
     sql_orderby_tipo = """
