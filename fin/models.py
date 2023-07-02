@@ -310,7 +310,7 @@ class Movimento(models.Model):
             max(cr.hora) as hora_fim
         from ajxfood.caixa_recebimento cr
         left join ajxfood.caixa_recebimento_formas crf
-        	on cr.codigo_online  = crf.codigo_recebimento
+        	on cr.codigo  = crf.codigo_recebimento
         left join ajxfood.caixa_abertura ca 
         	on cr.caixa = ca.caixa 
         left join ajxfood.caixa_livro_caixa_dinheiro clcd 
