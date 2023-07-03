@@ -316,6 +316,7 @@ class Movimento(models.Model):
         left join ajxfood.caixa_livro_caixa_dinheiro clcd 
     		on cr.caixa = clcd.caixa
         where crf.tipo not in ('FIADO','CORTESIA')
+        and ca.abertura ='Sim'
         and cr.data = %s    
         group by cr.caixa
     """
