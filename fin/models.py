@@ -28,11 +28,9 @@ class Sangria(models.Model):
 	        fr.hora 
         from ajxfood.financeiro_retiradas fr 
         where fr.caixa in (
-        select distinct
-            cr.caixa
-        from ajxfood.caixa_recebimento cr
-        where cr.data = %s 
-        order by cr.caixa
+            select distinct ca.caixa from ajxfood.caixa_abertura ca 
+                where ca.data =  %s 
+                order by ca.caixa
         )      
     """
     table_header = [
