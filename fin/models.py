@@ -113,7 +113,7 @@ class Produto:
                 statement += " AND p.removido = '' "
             statement += self.sql_orderby
             cursor.execute(statement, [param['codigo_produto'],
-                                       param['codigo_produto'],
+                                       "'" + param['texto_pesquisa'] + "'",
                                        '%' + param['texto_pesquisa'] + '%'])
             lista_produto = cursor.fetchall()
             table.update({'header': self.table_header,
