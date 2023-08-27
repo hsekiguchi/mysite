@@ -315,7 +315,7 @@ class Movimento(models.Model):
     		on cr.caixa = clcd.caixa
         where crf.tipo not in ('FIADO','CORTESIA')
         and ca.abertura ='Sim'
-        and cr.data = %s    
+        and ca.data = %s    
         group by cr.caixa
     """
     sql_statement_fechamento = """
